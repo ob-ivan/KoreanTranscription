@@ -15,7 +15,7 @@ h2 { clear : both }
 }
 .tabs div {
     float: left; 
-    padding: 3px 7px;
+    padding: 3px 8px;
     height: 20px;
 }
 .tabs div.tab { 
@@ -29,9 +29,13 @@ h2 { clear : both }
     border: 3px double #000;
     margin: 0px;
 }
-.tabs div.filler { width: 5px }
+.tabs div.filler { min-width: 1px; margin: 3px }
 
 /* поля форм */
 .container table { width: 100% }
 .container input { width: 90%; margin: 1px }
 .container textarea { width: 90%; margin: 1px }
+
+/* экранная клавиатура */
+.entry { display : none }
+

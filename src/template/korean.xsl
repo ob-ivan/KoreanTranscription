@@ -2,6 +2,8 @@
 <!DOCTYPE xsl:stylesheet [
     <!ENTITY nbsp   "&#160;">
     <!ENTITY mdash  "&#8212;">
+    <!ENTITY laquo  "&#171;">
+    <!ENTITY raquo  "&#187;">
     
     <!ENTITY wiki       "http://ru.wikipedia.org/wiki/">
     <!ENTITY koncevich  "Система_Концевича">
@@ -28,12 +30,13 @@
                 <link rel="stylesheet" href="style/style.css"/>
                 <script src="script/jquery-1.6.2.min.js"></script>
                 <script src="script/korean.js"></script>
+                <script src="script/HangulEntry.js"></script>
             </head>
             <body>
                 <h1><xsl:value-of select="title"/></h1>
                 
                 <div class="tabs">
-                    <div class="filler"/>
+                    <div class="filler">Режим транскрипции:</div>
                     <div class="tab name">Имя</div>
                     <div class="filler"/>
                     <div class="tab text">Текст</div>
@@ -52,7 +55,7 @@
                                             <td valign="top">
                                                 <label>
                                                     <p>хангыль</p>
-                                                    <input type="text" name="korean" value="{name/korean}" maxsize="5"/>
+                                                    <input class="korean" type="text" name="korean" value="{name/korean}" maxsize="5"/>
                                                 </label>
                                             </td>
                                             <td align="center">
@@ -86,14 +89,15 @@
                                     <p>
                                         Чтобы получить <a href="&wiki;&koncevich;" target="_blank">русскую транскрипцию</a> корейского имени,
                                         введите его <a href="&wiki;&hangeul;" target="_blank">в&nbsp;оригинальном написании</a>
-                                        в поле "хангыль" и нажмите GO.
+                                        в&nbsp;поле &laquo;хангыль&raquo; и нажмите GO.
                                     </p>
                                     <p>
-                                        Типичное корейское имя состоит из трёх слогов, первый из которых &mdash; фамилия и для наглядности
-                                        в транскрипции выделяется заглавными буквами.
+                                        Типичное корейское имя состоит из трёх слогов, первый из которых&nbsp;&mdash; фамилия, он для наглядности
+                                        в&nbsp;транскрипции выделяется заглавными буквами.
+                                        Остальные два слога (или иногда один)&nbsp;&mdash; это личное имя, оно пишется слитно.
                                     </p>
                                     <p>
-                                        Реже встречаются фамилии из двух слогов. Если вы имеете дело с таким случаем,
+                                        Изредка встречаются фамилии из двух слогов. Если вы имеете дело с&nbsp;таким случаем,
                                         поставьте, пожалуйста, пробел после второго слога для облегчения жизни конвертеру.
                                     </p>
                                 </td>
@@ -114,7 +118,7 @@
                                             <td valign="top">
                                                 <label>
                                                     <p>хангыль</p>
-                                                    <textarea name="korean" rows="{layout/rows_left}">
+                                                    <textarea class="korean" name="korean" rows="{layout/rows_left}">
                                                         <xsl:value-of select="text/korean"/>
                                                     </textarea>
                                                 </label>
@@ -152,11 +156,11 @@
                                 <td width="4%"/>
                                 <td width="48%" valign="top" class="help">
                                     <p>
-                                        Введите корейский текст в поле "<a href="&wiki;&hangeul;" target="_blank">хангыль</a>"
+                                        Введите корейский текст в&nbsp;поле &laquo;<a href="&wiki;&hangeul;" target="_blank">хангыль</a>&raquo;
                                         и нажмите GO, конвертер выдаст его <a href="&wiki;&koncevich;" target="_blank">русскую транскрипцию</a>.
                                     </p>
                                     <p>
-                                        Транскрипция далека от совершенства, поскольку в корейском языке (как и в любом другом)
+                                        Транскрипция далека от совершенства, поскольку в&nbsp;корейском языке (как и в&nbsp;любом другом)
                                         слова читаются не всегда так, как пишутся. Поэтому для реализации полноценной транскрипции
                                         пришлось бы использовать словарь чтений и лексический анализатор. Возможно, когда-нибудь
                                         и до этого руки дойдут, а пока что есть, то есть.
@@ -167,7 +171,15 @@
                     </form>
                 </div>
                 
-                <script>new Korean('<xsl:value-of select="active_tab"/>')</script>
+                <script>var korean = new Korean('<xsl:value-of select="active_tab"/>')</script>
+                
+                <div class="entry">
+                    <h1>Ввод хангыля</h1>
+                    <span class="result"></span>
+                    <div  class="keyboard"></div>
+                </div>
+                
+                <script>var entry = new HangulEntry(korean)</script>
             </body>
         </html>
     </xsl:template>
