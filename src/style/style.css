@@ -1,0 +1,37 @@
+/* метрические параметры */
+p  { margin : 0 }
+br { line-height : 3em }
+
+.help p { margin-bottom: 5px }
+
+/* общее для обеих форм */
+h2 { clear : both }
+.container { clear: both }
+
+/* закладочки */
+.tabs { 
+    display : none;
+    width: 100%;
+}
+.tabs div {
+    float: left; 
+    padding: 3px 7px;
+    height: 20px;
+}
+.tabs div.tab { 
+    cursor: pointer; 
+    color: #888;
+    border: 1px solid #888;
+    margin: 2px;
+}
+.tabs div.tab.active { 
+    color: #000;
+    border: 3px double #000;
+    margin: 0px;
+}
+.tabs div.filler { width: 5px }
+
+/* поля форм */
+.container table { width: 100% }
+.container input { width: 90%; margin: 1px }
+.container textarea { width: 90%; margin: 1px }
