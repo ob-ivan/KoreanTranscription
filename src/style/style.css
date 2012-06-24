@@ -37,5 +37,25 @@ h2 { clear : both }
 .container textarea { width: 90%; margin: 1px }
 
 /* экранная клавиатура */
-.entry { display : none }
+div.entry { display : none }
+div.entry div.keyboard div.case {
+    display : none;
+    width   : 800px;
+}
+div.entry div.keyboard div.line { clear: both }
+div.entry div.keyboard div.line1 { padding-left : 25px; }
+div.entry div.keyboard div.line2 { padding-left : 50px; }
+div.entry div.keyboard div.line .key {
+    min-width   : 60px;
+    margin      : 3px;
+    border      : 1px solid black;
+    padding     : 0 5px;
+    float       : left;
+    cursor      : pointer;
+}
+div.entry div.keyboard div.line .key.special {
+    float   : right;
+    height  : 50px;
+}
 
+/* конец экранной клавиатуры */

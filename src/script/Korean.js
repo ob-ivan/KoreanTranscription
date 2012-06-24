@@ -1,3 +1,4 @@
+
 /**
  * Превращает страницу с двумя видимыми формами в страничку с одной формой,
  * переключаемой табами между двумя режимами.
@@ -14,6 +15,12 @@
  *  h2.text
  *  div.text.container
  *      textarea.korean
+ *
+ *  interface Korean
+ *  {
+ *      // Возвращает поле ввода для выбранного в настоящий момент режима.
+ *      jQuery getActiveInput();
+ *  }
 **/
 var Korean = (function($)
 {
@@ -60,7 +67,7 @@ var Korean = (function($)
         
         // constructor //
         {
-            // switch from no JS version
+            // switch from noscript version
             $('h2').hide();
             tabs.show();
             
@@ -80,6 +87,9 @@ var Korean = (function($)
             // listen to events
             name_tab.click(setName);
             text_tab.click(setText);
+            
+            // TODO: Convert on client-side.
+            // But mantain server-side converter too, for clients without JS.
         }
     };
 })(jQuery);
