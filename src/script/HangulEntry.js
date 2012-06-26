@@ -24,69 +24,14 @@ var HangulEntry = (function ($)
 {
     // const //
     {
-        var SyllableStart = 44032;
-        var firstStep = 588; // = vowelCount * vowelStep
-        var vowelStep = 28;  // = lastCount
-        var lastStep  = 1;
+        var UnicodeSyllableStart = 44032;
+        var UnicodeFirstStep = 588; // = vowelCount * vowelStep
+        var UnicodeVowelStep = 28;  // = lastCount
+        var UnicodeLastStep  = 1;
         
-        var JamoInfo = {
-            ''  : {             last :  0                },
-            G   : { first :  0, last :  1, hangul : 'ㄱ', cyril : 'г'   },
-            GG  : { first :  1, last :  2, hangul : 'ㄲ', cyril : 'кк'  },
-            GS  : {             last :  3, hangul : 'ㄳ' },
-            N   : { first :  2, last :  4, hangul : 'ㄴ', cyril : 'н'   },
-            NJ  : {             last :  5, hangul : 'ㄵ' },
-            NH  : {             last :  6, hangul : 'ㄶ' },
-            D   : { first :  3, last :  7, hangul : 'ㄷ', cyril : 'д'   },
-            DD  : { first :  4,            hangul : 'ㄸ', cyril : 'тт'  },
-            R   : { first :  5, last :  8, hangul : 'ㄹ', cyril : 'р/л' },
-            RG  : {             last :  9, hangul : 'ㄺ' },
-            RM  : {             last : 10, hangul : 'ㄻ' },
-            RB  : {             last : 11, hangul : 'ㄼ' },
-            RS  : {             last : 12, hangul : 'ㄽ' },
-            RTh : {             last : 13, hangul : 'ㄾ' },
-            RPh : {             last : 14, hangul : 'ㄿ' },
-            RH  : {             last : 15, hangul : 'ㅀ' },
-            M   : { first :  6, last : 16, hangul : 'ㅁ', cyril : 'м'    },
-            B   : { first :  7, last : 17, hangul : 'ㅂ', cyril : 'б'    },
-            BB  : { first :  8,            hangul : 'ㅃ', cyril : 'пп'   },
-            BS  : {             last : 18, hangul : 'ㅄ' },
-            S   : { first :  9, last : 19, hangul : 'ㅅ', cyril : 'с'    },
-            SS  : { first : 10, last : 20, hangul : 'ㅆ', cyril : 'сс'   },
-            Ng  : { first : 11, last : 21, hangul : 'ㅇ', cyril : '-/нъ' },
-            J   : { first : 12, last : 22, hangul : 'ㅈ', cyril : 'дж'   },
-            JJ  : { first : 13,            hangul : 'ㅉ', cyril : 'чч'   },
-            Ch  : { first : 14, last : 23, hangul : 'ㅊ', cyril : 'чх'   },
-            Kh  : { first : 15, last : 24, hangul : 'ㅋ', cyril : 'кх'   },
-            Th  : { first : 16, last : 25, hangul : 'ㅌ', cyril : 'тх'   },
-            Ph  : { first : 17, last : 26, hangul : 'ㅍ', cyril : 'пх'   },
-            H   : { first : 18, last : 27, hangul : 'ㅎ', cyril : 'х'    },
-            
-            A   : { vowel :  0,            hangul : 'ㅏ', cyril : 'а'  }, 
-            Ae  : { vowel :  1,            hangul : 'ㅐ', cyril : 'э'  }, 
-            Ya  : { vowel :  2,            hangul : 'ㅑ', cyril : 'я'  }, 
-            Yae : { vowel :  3,            hangul : 'ㅒ', cyril : 'йэ' },
-            Eo  : { vowel :  4,            hangul : 'ㅓ', cyril : 'ô'  }, 
-            E   : { vowel :  5,            hangul : 'ㅔ', cyril : 'е'  },
-            Yeo : { vowel :  6,            hangul : 'ㅕ', cyril : 'йô' },
-            Ye  : { vowel :  7,            hangul : 'ㅖ', cyril : 'йе' },
-            O   : { vowel :  8,            hangul : 'ㅗ', cyril : 'о'  },
-            OA  : { vowel :  9,            hangul : 'ㅘ' },
-            OAe : { vowel : 10,            hangul : 'ㅙ' },
-            OI  : { vowel : 11,            hangul : 'ㅚ' },
-            Yo  : { vowel : 12,            hangul : 'ㅛ', cyril : 'ё' },
-            U   : { vowel : 13,            hangul : 'ㅜ', cyril : 'у' },
-            UEo : { vowel : 14,            hangul : 'ㅝ' },
-            UE  : { vowel : 15,            hangul : 'ㅞ' },
-            UI  : { vowel : 16,            hangul : 'ㅟ' },
-            Yu  : { vowel : 17,            hangul : 'ㅠ', cyril : 'ю' },
-            Eu  : { vowel : 18,            hangul : 'ㅡ', cyril : 'ы' },
-            EuI : { vowel : 19,            hangul : 'ㅢ' },
-            I   : { vowel : 20,            hangul : 'ㅣ', cyril : 'и' }
-            
-            // TODO: dot vowel
-        };
-        
+        /**
+         * map keyboard keys to jamoName
+        **/
         var layout = [
             { q : 'B',  w : 'J',  e : 'D',  r : 'G',  t : 'S',  y : 'Yo', u : 'Yeo', i : 'Ya', o : 'Ae', p : 'E', backspace : '&larr;' },
             { a : 'M',  s : 'N',  d : 'Ng', f : 'R',  g : 'H',  h : 'O',  j : 'Eo',  k : 'A',  l : 'I',           shift     : '&uarr;' },
@@ -98,6 +43,141 @@ var HangulEntry = (function ($)
             { A : 'M',  S : 'N',  D : 'Ng', F : 'R',  G : 'H',  H : 'O',  J : 'Eo',  K : 'A',  L : 'I',             SHIFT     : '&uarr;' },
             { Z : 'Kh', X : 'Th', C : 'Ch', V : 'Ph', B : 'Yu', N : 'U',  M : 'Eu',                                 SPACE     : '_'      }
         ];
+    }
+    
+    // private //
+    {
+        /**
+         *  interface Jamo
+         *  {
+         *      integer? first;
+         *      integer? vowel;
+         *      integer? last;
+         *      string   hangul;
+         *      string?  cyril;
+         *
+         *      boolean Jamo::exists (string jamoName);
+         *      Jamo    Jamo::get    (string jamoName);
+         *  }
+        **/
+        var Jamo = (function()
+        {
+            // const //
+            {
+                /**
+                 *  {
+                 *      <jamoName> : {
+                 *          [first : <offset>,]
+                 *          [vowel : <offset>,]
+                 *          [last  : <offset>,]
+                 *          hangul : <...>,
+                 *          [cyril : <...>,]
+                 *      },
+                 *      ...
+                 *  }
+                **/
+                var JamoInfo = {
+                    G   : { first :  0, last :  1, hangul : 'ㄱ', cyril : 'г'   },
+                    GG  : { first :  1, last :  2, hangul : 'ㄲ', cyril : 'кк'  },
+                    GS  : {             last :  3, hangul : 'ㄳ' },
+                    N   : { first :  2, last :  4, hangul : 'ㄴ', cyril : 'н'   },
+                    NJ  : {             last :  5, hangul : 'ㄵ' },
+                    NH  : {             last :  6, hangul : 'ㄶ' },
+                    D   : { first :  3, last :  7, hangul : 'ㄷ', cyril : 'д'   },
+                    DD  : { first :  4,            hangul : 'ㄸ', cyril : 'тт'  },
+                    R   : { first :  5, last :  8, hangul : 'ㄹ', cyril : 'р/л' },
+                    RG  : {             last :  9, hangul : 'ㄺ' },
+                    RM  : {             last : 10, hangul : 'ㄻ' },
+                    RB  : {             last : 11, hangul : 'ㄼ' },
+                    RS  : {             last : 12, hangul : 'ㄽ' },
+                    RTh : {             last : 13, hangul : 'ㄾ' },
+                    RPh : {             last : 14, hangul : 'ㄿ' },
+                    RH  : {             last : 15, hangul : 'ㅀ' },
+                    M   : { first :  6, last : 16, hangul : 'ㅁ', cyril : 'м'    },
+                    B   : { first :  7, last : 17, hangul : 'ㅂ', cyril : 'б'    },
+                    BB  : { first :  8,            hangul : 'ㅃ', cyril : 'пп'   },
+                    BS  : {             last : 18, hangul : 'ㅄ' },
+                    S   : { first :  9, last : 19, hangul : 'ㅅ', cyril : 'с'    },
+                    SS  : { first : 10, last : 20, hangul : 'ㅆ', cyril : 'сс'   },
+                    Ng  : { first : 11, last : 21, hangul : 'ㅇ', cyril : '-/нъ' },
+                    J   : { first : 12, last : 22, hangul : 'ㅈ', cyril : 'дж'   },
+                    JJ  : { first : 13,            hangul : 'ㅉ', cyril : 'чч'   },
+                    Ch  : { first : 14, last : 23, hangul : 'ㅊ', cyril : 'чх'   },
+                    Kh  : { first : 15, last : 24, hangul : 'ㅋ', cyril : 'кх'   },
+                    Th  : { first : 16, last : 25, hangul : 'ㅌ', cyril : 'тх'   },
+                    Ph  : { first : 17, last : 26, hangul : 'ㅍ', cyril : 'пх'   },
+                    H   : { first : 18, last : 27, hangul : 'ㅎ', cyril : 'х'    },
+                    
+                    A   : { vowel :  0,            hangul : 'ㅏ', cyril : 'а'  }, 
+                    Ae  : { vowel :  1,            hangul : 'ㅐ', cyril : 'э'  }, 
+                    Ya  : { vowel :  2,            hangul : 'ㅑ', cyril : 'я'  }, 
+                    Yae : { vowel :  3,            hangul : 'ㅒ', cyril : 'йэ' },
+                    Eo  : { vowel :  4,            hangul : 'ㅓ', cyril : 'ô'  }, 
+                    E   : { vowel :  5,            hangul : 'ㅔ', cyril : 'е'  },
+                    Yeo : { vowel :  6,            hangul : 'ㅕ', cyril : 'йô' },
+                    Ye  : { vowel :  7,            hangul : 'ㅖ', cyril : 'йе' },
+                    O   : { vowel :  8,            hangul : 'ㅗ', cyril : 'о'  },
+                    OA  : { vowel :  9,            hangul : 'ㅘ' },
+                    OAe : { vowel : 10,            hangul : 'ㅙ' },
+                    OI  : { vowel : 11,            hangul : 'ㅚ' },
+                    Yo  : { vowel : 12,            hangul : 'ㅛ', cyril : 'ё' },
+                    U   : { vowel : 13,            hangul : 'ㅜ', cyril : 'у' },
+                    UEo : { vowel : 14,            hangul : 'ㅝ' },
+                    UE  : { vowel : 15,            hangul : 'ㅞ' },
+                    UI  : { vowel : 16,            hangul : 'ㅟ' },
+                    Yu  : { vowel : 17,            hangul : 'ㅠ', cyril : 'ю' },
+                    Eu  : { vowel : 18,            hangul : 'ㅡ', cyril : 'ы' },
+                    EuI : { vowel : 19,            hangul : 'ㅢ' },
+                    I   : { vowel : 20,            hangul : 'ㅣ', cyril : 'и' }
+                    
+                    // TODO: dot vowel
+                };
+
+            }
+            
+            // constructor //
+            var Jamo = function Jamo (jamoName)
+            {
+                if (! jamoName in JamoInfo)
+                {
+                    throw new Error ('Unknown jamoName "' + jamoName + '"');
+                }
+                
+                this.jamoName = jamoName;
+                for (var property in JamoInfo[jamoName])
+                {
+                    if (! JamoInfo[jamoName].hasOwnProperty(property))
+                    {
+                        continue;
+                    }
+                    this[property] = JamoInfo[jamoName][property];
+                }
+            };
+            
+            // static var //
+            {
+                var registry = {};
+            }
+            
+            // static public //
+            {
+                Jamo.exists = function exists (jamoName)
+                {
+                    return typeof JamoInfo[jamoName] !== 'undefined';
+                };
+                
+                Jamo.get = function get (jamoName)
+                {
+                    if (typeof registry[jamoName] === 'undefined')
+                    {
+                        registry[jamoName] = new Jamo (jamoName);
+                    }
+                    return registry[jamoName];
+                };
+            }
+            
+            return Jamo;
+        })();
     }
                 
     return function HangulEntry (korean)
@@ -135,9 +215,28 @@ var HangulEntry = (function ($)
             {
                 // private //
                 {
+                    /**
+                     * Compiles jamo in jamoQueue into unicode string using
+                     * Unicode* constants for syllables and jamo.hangul for
+                     * letters.
+                     *
+                     *  @return {string}
+                    **/
+                    var compileSyllables = function compileSyllables()
+                    {
+                        var result = '';
+                        
+                        // TODO
+                        
+                        return result;
+                    };
+                
                     var redrawQueue = function redrawQueue()
                     {
-                        // TODO
+                        var syllableQueue = compileSyllables();
+                        
+                        // TODO: Заменить результат вместо предыдущего, если он ещё выделен.
+                        // И вообще разобраться с тем, как это всё должно происходить.
                     };
                     
                     var addJamo = function addJamo (jamo)
@@ -172,6 +271,9 @@ var HangulEntry = (function ($)
                         currentTab.hide();
                         currentTab = upperTab;
                         currentTab.show();
+                        
+                        // TODO: Если был нажат "экранный шифт", после нажатия следующей кнопки
+                        // кнопки надо сбросить на нижний регистр. Если клавиатурный -- то оставить.
                     };
                     
                     // SHIFT
@@ -202,20 +304,21 @@ var HangulEntry = (function ($)
                                 continue;
                             }
                             
-                            var jamo = layoutVariant[lineNum][key];
+                            var jamoName = layoutVariant[lineNum][key];
                             var inner = '';
                             var click = false;
-                            if (jamo in JamoInfo)
+                            if (Jamo.exists (jamoName))
                             {
+                                var jamo = Jamo.get (jamoName);
                                 // jamo
                                 inner = '<table class="key">' +
                                     '<tr>' +
                                         '<td align="center">' + key + '</td>' +
-                                        '<td align="center">' + JamoInfo[jamo].hangul + '</td>' +
+                                        '<td align="center">' + jamo.hangul + '</td>' +
                                     '</tr>' +
                                     '<tr>' +
                                         '<td></td>' +
-                                        '<td align="center">' + JamoInfo[jamo].cyril + '</td>' +
+                                        '<td align="center">' + jamo.cyril + '</td>' +
                                     '</tr>' +
                                 '</table>';
                                 click = function ()
@@ -227,7 +330,7 @@ var HangulEntry = (function ($)
                             else
                             {
                                 // specials
-                                inner = '<table class="key special"><tr><td>' + jamo + ' ' + key + '</td></tr></table>';
+                                inner = '<table class="key special"><tr><td>' + jamoName + ' ' + key + '</td></tr></table>';
                                 
                                 if (key === 'backspace')
                                 {
