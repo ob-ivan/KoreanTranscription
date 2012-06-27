@@ -30,7 +30,7 @@ var HangulEntry = (function ($)
         var UnicodeLastStep  = 1;
         
         /**
-         * map keyboard keys to jamoName
+         * map keyboard keys to name
         **/
         var layout = [
             { q : 'B',  w : 'J',  e : 'D',  r : 'G',  t : 'S',  y : 'Yo', u : 'Yeo', i : 'Ya', o : 'Ae', p : 'E', backspace : '&larr;' },
@@ -56,8 +56,8 @@ var HangulEntry = (function ($)
          *      string   hangul;
          *      string?  cyril;
          *
-         *      boolean Jamo::exists (string jamoName);
-         *      Jamo    Jamo::get    (string jamoName);
+         *      boolean Jamo::exists (string name);
+         *      Jamo    Jamo::get    (string name);
          *  }
         **/
         var Jamo = (function()
@@ -66,7 +66,7 @@ var HangulEntry = (function ($)
             {
                 /**
                  *  {
-                 *      <jamoName> : {
+                 *      <name> : {
                  *          [first : <offset>,]
                  *          [vowel : <offset>,]
                  *          [last  : <offset>,]
@@ -132,25 +132,24 @@ var HangulEntry = (function ($)
                     
                     // TODO: dot vowel
                 };
-
             }
             
             // constructor //
-            var Jamo = function Jamo (jamoName)
+            var Jamo = function Jamo (name)
             {
-                if (! jamoName in JamoInfo)
+                if (! name in JamoInfo)
                 {
-                    throw new Error ('Unknown jamoName "' + jamoName + '"');
+                    throw new Error ('Jamo: name = "' + name + '", not in JamoInfo');
                 }
                 
-                this.jamoName = jamoName;
-                for (var property in JamoInfo[jamoName])
+                this.name = name;
+                for (var property in JamoInfo[name])
                 {
-                    if (! JamoInfo[jamoName].hasOwnProperty(property))
+                    if (! JamoInfo[name].hasOwnProperty(property))
                     {
                         continue;
                     }
-                    this[property] = JamoInfo[jamoName][property];
+                    this[property] = JamoInfo[name][property];
                 }
             };
             
@@ -161,36 +160,411 @@ var HangulEntry = (function ($)
             
             // static public //
             {
-                Jamo.exists = function exists (jamoName)
+                Jamo.exists = function exists (name)
                 {
-                    return typeof JamoInfo[jamoName] !== 'undefined';
+                    return typeof JamoInfo[name] !== 'undefined';
                 };
                 
-                Jamo.get = function get (jamoName)
+                Jamo.get = function get (name)
                 {
-                    if (typeof registry[jamoName] === 'undefined')
+                    if (typeof registry[name] === 'undefined')
                     {
-                        registry[jamoName] = new Jamo (jamoName);
+                        registry[name] = new Jamo (name);
                     }
-                    return registry[jamoName];
+                    return registry[name];
                 };
             }
             
             return Jamo;
         })();
+    
+        var Syllable = function Syllable (previous)
+        {
+            // init //
+            {
+                if (! this instanceof Syllable)
+                {
+                    return new Syllable (previous);
+                }
+                
+                if (previous)
+                {
+                    if (! previous instanceof Syllable)
+                    {
+                        throw new TypeError ('Syllable: previous must be instance of Syllable');
+                    }
+                }
+            }
+            
+            // const //
+            {
+                var PART_FIRST = 1;
+                var PART_VOWEL = 2;
+                var PART_LAST  = 3;
+            }
+            
+            // var //
+            {
+                /**
+                 *  {
+                 *      <PART_FIRST> : [Jamo, Jamo],
+                 *      <PART_VOWEL> : [Jamo, Jamo],
+                 *      <PART_LAST>  : [Jamo, Jamo]
+                 *  }
+                **/
+                var queue = {};
+                var prevSyllable, // instanceof Syllable
+                    nextSyllable; // instanceof Syllable
+                
+                /**
+                 *  {
+                 *      <PART_FIRST> : Jamo,
+                 *      <PART_VOWEL> : Jamo,
+                 *      <PART_LAST>  : Jamo
+                 *  }
+                **/
+                var compiled = {};
+                var hangul = ''; // string
+            }
+            
+            // private //
+            {
+                var makeHangul = function makeHangul()
+                {
+                    if (compiled[PART_FIRST])
+                    {
+                        if (compiled[PART_VOWEL])
+                        {
+                            // assert: a syllable.
+                            var code =
+                                UnicodeSyllableStart +
+                                compiled[PART_FIRST].first * UnicodeFirstStep +
+                                compiled[PART_VOWEL].vowel * UnicodeVowelStep
+                            ;
+                            if (compiled[PART_LAST])
+                            {
+                                code += compiled[PART_LAST].last;
+                            }
+                            hangul = String.fromCharCode (code);
+                        }
+                        else
+                        {
+                            // assert: a single first.
+                            hangul = compiled[PART_FIRST].hangul;
+                        }
+                    }
+                    else if (compiled[PART_VOWEL])
+                    {
+                        // assert: a single vowel
+                        hangul = compiled[PART_VOWEL].hangul;
+                    }
+                    else
+                    {
+                        hangul = '';
+                    }
+                };
+            
+                var compilePart = function compilePart (part)
+                {
+                    if (! (part === PART_FIRST || part === PART_VOWEL || part === PART_LAST))
+                    {
+                        throw new Error ('Syllable.compilePart: part must be one of PART_FIRST, PART_VOWEL, PART_LAST');
+                    }
+                    
+                    if (queue[part].length > 1)
+                    {
+                        var compiledName = queue[part][0].name + queue[part][1].name;
+                        if (! Jamo.exists (compiledName))
+                        {
+                            throw new Error ('Syllable/compileLast: compiledName does not exist in Jamo');
+                        }
+                        compiled[part] = Jamo.get (compiledName);
+                    }
+                    else if (queue[part].length > 0)
+                    {
+                        compiled[part] = queue[part][0];
+                    }
+                    else
+                    {
+                        compiled[part] = null;
+                    }
+                    makeHangul();
+                };
+            }
+            
+            // public //
+            {
+                /**
+                 *  @param  {Jamo}      jamo
+                 *  @return {Syllable}          reference to the new tail.
+                **/
+                this.append = function append (jamo)
+                {
+                    if (! jamo instanceof Jamo)
+                    {
+                        throw new TypeError ('Syllable.append: jamo must be instance of Jamo');
+                    }
+                    if (nextSyllable)
+                    {
+                        return nextSyllable.append (jamo);
+                    }
+                    
+                    if (typeof jamo.vowel !== 'undefined')
+                    {
+                        // assert: jamo is a vowel.
+                        if (queue[PART_LAST].length > 0)
+                        {
+                            // Detach last.
+                            var nextFirst = queue[PART_LAST].pop();
+                            compilePart (PART_LAST);
+                            
+                            if (typeof nextFirst.first === 'undefined')
+                            {
+                                throw new Error ('Syllable.append: nextFirst.first is undefined');
+                            }
+                            
+                            // Compose next.
+                            nextSyllable = new Syllable (this);
+                            nextSyllable.append (nextFirst);
+                            return nextSyllable.append (jamo);
+                        }
+                        else if (queue[PART_VOWEL].length > 1)
+                        {
+                            // No place for jamo. Compose next.
+                            nextSyllable = new Syllable (this);
+                            return nextSyllable.append (jamo);
+                        }
+                        else if (queue[PART_VOWEL].length > 0)
+                        {
+                            // jamo either can be combined with vowel or not.
+                            var combinedName = queue[PART_VOWEL][0].name + jamo.name;
+                            if (Jamo.exists (combinedName))
+                            {
+                                // combinable.
+                                queue[PART_VOWEL].push (jamo);
+                                compilePart (PART_VOWEL);
+                                return this;
+                            }
+                            else
+                            {
+                                // Not combinable. Compose next.
+                                nextSyllable = new Syllable (this);
+                                return nextSyllable.append (jamo);
+                            }
+                        }
+                        else
+                        {
+                            // assert: no vowel in the current syllable.
+                            if (queue[PART_FIRST].length > 1)
+                            {
+                                // first either can start a syllable or not.
+                                if (typeof compiled[PART_FIRST].first !== 'undefined')
+                                {
+                                    // first can start a syllable. add vowel.
+                                    queue[PART_VOWEL].push (jamo);
+                                    compilePart (PART_VOWEL);
+                                    return this;
+                                }
+                                else
+                                {
+                                    // first cannot start a syllable. detach one.
+                                    var nextFirst = queue[PART_FIRST].pop();
+                                    compilePart (PART_FIRST);
+                                    
+                                    if (typeof nextFirst.first === 'undefined')
+                                    {
+                                        throw new Error ('Syllable.append: nextFirst.first is undefined');
+                                    }
+                                    
+                                    // Compose next.
+                                    nextSyllable = new Syllable (this);
+                                    nextSyllable.append (nextFirst);
+                                    return nextSyllable.append (jamo);
+                                }
+                            }
+                            else
+                            {
+                                queue[PART_VOWEL].push (jamo);
+                                compilePart (PART_VOWEL);
+                                return this;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // jamo is a consonant.
+                        if (queue[PART_LAST].length > 1)
+                        {
+                            // No place for consonant. Compose next.
+                            nextSyllable = new Syllable (this);
+                            return nextSyllable.append (jamo);
+                        }
+                        else if (queue[PART_LAST].length > 0)
+                        {
+                            // jamo either can be combined with last or not.
+                            var combinedName = queue[PART_LAST][0].name + jamo.name;
+                            if (Jamo.exists (combinedName))
+                            {
+                                // combinable.
+                                queue[PART_LAST].push (jamo);
+                                compilePart (PART_LAST);
+                                return this;
+                            }
+                            else
+                            {
+                                // Not combinable. Compose next.
+                                nextSyllable = new Syllable (this);
+                                return nextSyllable.append (jamo);
+                            }
+                        }
+                        else if (queue[PART_VOWEL].length > 0)
+                        {
+                            // vowel is either single or in a syllable.
+                            if (queue[PART_FIRST].length > 0)
+                            {
+                                // A syllable. jamo either can be last or not.
+                                if (typeof jamo.last !== 'undefined')
+                                {
+                                    // Append as last.
+                                    queue[PART_LAST].push (jamo);
+                                    compilePart (PART_LAST);
+                                    return this;
+                                }
+                                else
+                                {
+                                    // Not appendable. Compose next.
+                                    nextSyllable = new Syllable (this);
+                                    return nextSyllable.append (jamo);
+                                }
+                            }
+                            else
+                            {
+                                // A single vowel. Compose next.
+                                nextSyllable = new Syllable (this);
+                                return nextSyllable.append (jamo);
+                            }
+                        }
+                        else if (queue[PART_FIRST].length > 0)
+                        {
+                            // jamo either can be combined with first or not.
+                            var combinedName = queue[PART_FIRST][0].name + jamo.name;
+                            if (Jamo.exists (combinedName))
+                            {
+                                // combinable.
+                                queue[PART_FIRST].push (jamo);
+                                compilePart (PART_FIRST);
+                                return this;
+                            }
+                            else
+                            {
+                                // Not combinable. Compose next.
+                                nextSyllable = new Syllable (this);
+                                return nextSyllable.append (jamo);
+                            }
+                        }
+                        else
+                        {
+                            // assert: current syllable is empty.
+                            if (typeof jamo.first === 'undefined')
+                            {
+                                throw new Error ('Syllable.append: jamo.first is undefined');
+                            }
+                            queue[PART_FIRST].push (jamo);
+                            compilePart (PART_FIRST);
+                            return this;
+                        }
+                    }
+                };
+                
+                this.toString = function toString()
+                {
+                    return hangul;
+                };
+            
+                this.getNext = function getNext()
+                {
+                    return nextSyllable;
+                };
+            }
+        
+            // constructor //
+            {
+                prevSyllable = previous;
+                
+                queue[PART_FIRST] = [];
+                queue[PART_VOWEL] = [];
+                queue[PART_LAST]  = [];
+                
+                compiled[PART_FIRST] = null;
+                compiled[PART_VOWEL] = null;
+                compiled[PART_LAST]  = null;
+            }
+        };
+        
+        var SyllableChain = function SyllableChain()
+        {
+            // var //
+            {
+                var head, // instanceof Syllable
+                    tail; // instanceof Syllable
+                var hangul = '';
+            }
+            
+            // private //
+            {
+                var makeHangul = function makeHangul()
+                {
+                    var result = '';
+                    if (head)
+                    {
+                        for (var syllable = head; syllable; syllable = syllable.getNext())
+                        {
+                            result += syllable;
+                        }
+                    }
+                    return result;
+                };
+            }
+            
+            // public //
+            {
+                this.append = function append (jamo)
+                {
+                    if (! jamo instanceof Jamo)
+                    {
+                        throw new TypeError ('SyllableChain.append: jamo must be instance of Jamo');
+                    }
+                    
+                    if (! head)
+                    {
+                        head = tail = new Syllable;
+                    }
+                    tail = tail.append (jamo);
+                    hangul = makeHangul();
+                };
+                
+                // TODO: this.deleteJamo
+                // TODO: this.deleteSyllable
+                
+                this.toString = function toString()
+                {
+                    return hangul;
+                }
+            }
+        };
     }
                 
     return function HangulEntry (korean)
     {
         // init //
         {
-            if (typeof Korean == 'undefined')
+            if (typeof Korean === 'undefined')
             {
-                throw new ReferenceError ('Class Korean is not defined');
+                throw new ReferenceError ('HangulEntry: Korean is undefined');
             }
             if (! korean instanceof Korean)
             {
-                throw new TypeError ('Argument must be an instance of class Korean');
+                throw new TypeError ('HangulEntry: korean must be instance of Korean');
             }
         }
         
@@ -206,7 +580,7 @@ var HangulEntry = (function ($)
             var currentTab = lowerTab;
             
             // input //
-            var jamoQueue = [];
+            var syllableChain = new SyllableChain;
         }
         
         // private //
@@ -215,44 +589,29 @@ var HangulEntry = (function ($)
             {
                 // private //
                 {
-                    /**
-                     * Compiles jamo in jamoQueue into unicode string using
-                     * Unicode* constants for syllables and jamo.hangul for
-                     * letters.
-                     *
-                     *  @return {string}
-                    **/
-                    var compileSyllables = function compileSyllables()
-                    {
-                        var result = '';
-                        
-                        // TODO
-                        
-                        return result;
-                    };
-                
                     var redrawQueue = function redrawQueue()
                     {
-                        var syllableQueue = compileSyllables();
+                        var text = syllableChain.toString();
                         
                         // TODO: Заменить результат вместо предыдущего, если он ещё выделен.
                         // И вообще разобраться с тем, как это всё должно происходить.
+                        
+                        // DEBUG
+                        var input = korean.getActiveInput();
+                        input.val (text);
                     };
                     
                     var addJamo = function addJamo (jamo)
                     {
-                        jamoQueue.push (jamo);
+                        syllableChain.append (jamo);
                         redrawQueue();
                     };
                     
                     // backspace
                     var deleteJamo = function deleteJamo()
                     {
-                        if (jamoQueue.length > 0)
-                        {
-                            jamoQueue.pop();
-                            redrawQueue();
-                        }
+                        syllableChain.deleteJamo();
+                        redrawQueue();
                     };
                     
                     // BACKSPACE
@@ -288,7 +647,36 @@ var HangulEntry = (function ($)
                         currentTab.show();
                     };
                     
-                    // TODO: space
+                    // TODO: spacebar
+                    
+                    var getJamoClick = function getJamoClick (jamo)
+                    {
+                        return function ()
+                        {
+                            addJamo (jamo);
+                        };
+                    }
+                    
+                    var getSpecialClick = function getSpecialClick (key)
+                    {
+                        if (key === 'backspace')
+                        {
+                            return deleteJamo;
+                        }
+                        if (key === 'BACKSPACE')
+                        {
+                            return deleteSyllable;
+                        }
+                        if (key === 'shift')
+                        {
+                            return showUpperTab;
+                        }
+                        if (key === 'SHIFT')
+                        {
+                            return showLowerTab;
+                        }
+                        // TODO: spacebar
+                    };
                 }
                 
                 // body //
@@ -304,61 +692,37 @@ var HangulEntry = (function ($)
                                 continue;
                             }
                             
-                            var jamoName = layoutVariant[lineNum][key];
+                            var name = layoutVariant[lineNum][key];
                             var inner = '';
                             var click = false;
-                            if (Jamo.exists (jamoName))
+                            if (Jamo.exists (name))
                             {
-                                var jamo = Jamo.get (jamoName);
                                 // jamo
-                                inner = '<table class="key">' +
-                                    '<tr>' +
-                                        '<td align="center">' + key + '</td>' +
-                                        '<td align="center">' + jamo.hangul + '</td>' +
-                                    '</tr>' +
-                                    '<tr>' +
-                                        '<td></td>' +
-                                        '<td align="center">' + jamo.cyril + '</td>' +
-                                    '</tr>' +
-                                '</table>';
-                                click = function ()
-                                {
-                                    addJamo (jamo);
-                                };
-                                // TODO: keydown
+                                var jamo = Jamo.get (name);
+                                click = getJamoClick (jamo);
+                                inner =
+                                    '<table class="key">' +
+                                        '<tr>' +
+                                            '<td align="center">' + key + '</td>' +
+                                            '<td align="center">' + jamo.hangul + '</td>' +
+                                        '</tr>' +
+                                        '<tr>' +
+                                            '<td></td>' +
+                                            '<td align="center">' + jamo.cyril + '</td>' +
+                                        '</tr>' +
+                                    '</table>'
+                                ;
                             }
                             else
                             {
                                 // specials
-                                inner = '<table class="key special"><tr><td>' + jamoName + ' ' + key + '</td></tr></table>';
-                                
-                                if (key === 'backspace')
-                                {
-                                    click = deleteJamo;
-                                }
-                                else if (key === 'BACKSPACE')
-                                {
-                                    click = deleteSyllable;
-                                }
-                                else if (key === 'shift')
-                                {
-                                    click = showUpperTab;
-                                }
-                                else if (key === 'SHIFT')
-                                {
-                                    click = showLowerTab;
-                                }
-                                // TODO: click space.
-                                // TODO: keydown
+                                inner = '<table class="key special"><tr><td>' + name + ' ' + key + '</td></tr></table>';
+                                click = getSpecialClick (key);
                             }
+                            
                             var keyDiv = $(inner);
-                            
-                            // TODO: сделать один общий онклик, чтобы сэкономить память на колбэках.
-                            if (click)
-                            {
-                                keyDiv.click (click);
-                            }
-                            
+                            keyDiv.click (click);
+                            // TODO: handle keydown event
                             lineDiv.append (keyDiv);
                         }
                         caseTab.append (lineDiv);
