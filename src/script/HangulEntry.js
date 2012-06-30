@@ -268,7 +268,7 @@ var HangulEntry = (function ($)
                 {
                     if (! (part === PART_FIRST || part === PART_VOWEL || part === PART_LAST))
                     {
-                        throw new Error ('Syllable.compilePart: part must be one of PART_FIRST, PART_VOWEL, PART_LAST');
+                        throw new Error ('Syllable/compilePart: part must be one of PART_FIRST, PART_VOWEL, PART_LAST');
                     }
                     
                     if (queue[part].length > 1)
@@ -276,7 +276,7 @@ var HangulEntry = (function ($)
                         var compiledName = queue[part][0].name + queue[part][1].name;
                         if (! Jamo.exists (compiledName))
                         {
-                            throw new Error ('Syllable/compileLast: compiledName does not exist in Jamo');
+                            throw new Error ('Syllable/compilePart: compiledName does not exist in Jamo');
                         }
                         compiled[part] = Jamo.get (compiledName);
                     }
@@ -403,8 +403,9 @@ var HangulEntry = (function ($)
                         {
                             // jamo either can be combined with last or not.
                             var combinedName = queue[PART_LAST][0].name + jamo.name;
-                            if (Jamo.exists (combinedName))
-                            {
+                            if (Jamo.exists (combinedName) && 
+                                typeof Jamo.get (combinedName).last !== 'undefined'
+                            ) {
                                 // combinable.
                                 queue[PART_LAST].push (jamo);
                                 compilePart (PART_LAST);
@@ -566,6 +567,10 @@ var HangulEntry = (function ($)
             {
                 throw new TypeError ('HangulEntry: korean must be instance of Korean');
             }
+            if (typeof $.fn.selection === 'undefined')
+            {
+                throw new Error ('HangulEntry: jQuery selection plugin is not loaded');
+            }
         }
         
         // var //
@@ -587,6 +592,11 @@ var HangulEntry = (function ($)
         {
             var spawnTab = (function()
             {
+                // var //
+                {
+                    var prevSelection; // instanceof Selection
+                }
+                
                 // private //
                 {
                     var redrawQueue = function redrawQueue()
@@ -596,9 +606,8 @@ var HangulEntry = (function ($)
                         // TODO: Заменить результат вместо предыдущего, если он ещё выделен.
                         // И вообще разобраться с тем, как это всё должно происходить.
                         
-                        // DEBUG
                         var input = korean.getActiveInput();
-                        input.val (text);
+                        input.selection().replace (text);
                     };
                     
                     var addJamo = function addJamo (jamo)

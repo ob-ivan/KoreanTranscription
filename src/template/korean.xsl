@@ -28,9 +28,10 @@
                 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
                 <title><xsl:value-of select="title"/></title>
                 <link rel="stylesheet" href="style/style.css"/>
-                <script src="script/jquery-1.6.2.min.js"></script>
-                <script src="script/korean.js"></script>
-                <script src="script/HangulEntry.js"></script>
+                <script type="text/javascript" src="script/jquery-1.6.2.min.js"></script>
+                <script type="text/javascript" src="script/Korean.js"></script>
+                <script type="text/javascript" src="script/Selection.jquery.js"></script>
+                <script type="text/javascript" src="script/HangulEntry.js"></script>
             </head>
             <body>
                 <h1><xsl:value-of select="title"/></h1>
@@ -171,15 +172,14 @@
                     </form>
                 </div>
                 
-                <script>var korean = new Korean('<xsl:value-of select="active_tab"/>')</script>
+                <script type="text/javascript">var korean = new Korean('<xsl:value-of select="active_tab"/>')</script>
                 
                 <div class="entry">
                     <h1>Ввод хангыля</h1>
-                    <span class="result"></span>
                     <div  class="keyboard"></div>
                 </div>
                 
-                <script>var entry = new HangulEntry(korean)</script>
+                <script type="text/javascript">var entry = new HangulEntry(korean)</script>
             </body>
         </html>
     </xsl:template>

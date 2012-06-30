@@ -33,7 +33,9 @@ var Korean = (function($)
                 text_tab = tabs.find('.tab.text'),
                 name_container = $('.name.container'),
                 text_container = $('.text.container'),
-                current_tab = null;
+                current_tab = null
+            ;
+            var inputCache = {};
         }
         
         // private //
@@ -61,7 +63,11 @@ var Korean = (function($)
         {
             this.getActiveInput = function()
             {
-                return $('div.' + current_tab + '.container .korean');
+                if (typeof inputCache[current_tab] === 'undefined')
+                {
+                    inputCache[current_tab] = $('div.' + current_tab + '.container .korean');
+                }
+                return inputCache[current_tab];
             };
         }
         
