@@ -30,7 +30,8 @@
                 <link rel="stylesheet" href="style/style.css"/>
                 <script type="text/javascript" src="script/jquery-1.6.2.min.js"></script>
                 <script type="text/javascript" src="script/Korean.js"></script>
-                <script type="text/javascript" src="script/Selection.jquery.js"></script>
+                <script type="text/javascript" src="script/AddPlugin.js"></script>
+                <script type="text/javascript" src="script/Selection.js"></script>
                 <script type="text/javascript" src="script/HangulEntry.js"></script>
             </head>
             <body>

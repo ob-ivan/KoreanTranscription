@@ -1,4 +1,6 @@
 
+// TODO: Remove dependency from Korean. Convert it into a jQuery plugin.
+
 /**
  * Создаёт экранную клавиатуру для побуквенного ввода корейских слогов.
  * Результат набора вставляется в элемент, возвращаемый korean.getActiveInput.
@@ -607,11 +609,19 @@ var HangulEntry = (function ($)
                         // И вообще разобраться с тем, как это всё должно происходить.
                         
                         var input = korean.getActiveInput();
-                        input.selection().replace (text);
+                        prevSelection = input.selection().replace (text);
                     };
                     
                     var addJamo = function addJamo (jamo)
                     {
+                        var input = korean.getActiveInput();
+                        var selection = input.selection().get();
+                        if (prevSelection && ! selection.isEqual (prevSelection))
+                        {
+                            // Discard jamo data from the chain which was unselected.
+                            syllableChain = new SyllableChain;
+                        }
+                        
                         syllableChain.append (jamo);
                         redrawQueue();
                     };

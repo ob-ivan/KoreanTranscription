@@ -8,6 +8,23 @@
         this.end    = end;
         this.length = length;
         this.text   = text;
+        
+        this.isEqual = function isEqual (selection)
+        {
+            if (! selection instanceof Selection)
+            {
+                throw new TypeError ('Selection.isEqual: selection must be an instance of Selection');
+            };
+            
+            if (selection.start     === start &&
+                selection.end       === end &&
+                selection.length    === length &&
+                selection.text      === text
+            ) {
+                return true;
+            }
+            return false;
+        };
     };
     
     var methods = {

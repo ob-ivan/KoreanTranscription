@@ -30,7 +30,7 @@ var AddPlugin = (function ($)
         return bound;
     };
     
-    return function (name, methods)
+    return function AddPlugin (name, methods)
     {
         $.fn[name] = (function ()
         {
