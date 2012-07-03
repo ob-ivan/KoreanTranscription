@@ -1,7 +1,31 @@
 
-// Credits go to user357565 and Fèlix Galindo Allué at stackoverflow.
-(function ()
+/**
+ * Operations with text selection in input fields.
+ *
+ * Requires jQuery, jQuery.addPlugin.
+ *
+ * Credits go to user357565 and Fèlix Galindo Allué at stackoverflow.
+ *
+ *  interface Selection
+ *  {
+ *      integer start;
+ *      integer end;
+ *      integer length;
+ *      string  text;
+ *      boolean isEqual (Selection selection);
+ *  }
+ *
+ *  interface jQuery.fn.selection
+ *  {
+ *      Selection   get();
+ *      Selection   set (integer start, integer end);
+ *      Selection   replace (string string);
+ *      Selection   wrap (string left, string right, integer offset, integer length);
+ *  }
+**/
+jQuery.addPlugin ('selection', null, (function ()
 {
+    // private //
     var Selection = function Selection (start, end, length, text)
     {
         this.start  = start;
@@ -27,7 +51,8 @@
         };
     };
     
-    var methods = {
+    // methods //
+    return {
         get : function get () 
         {
             var e = this.get (0);
@@ -147,7 +172,5 @@
             return selection;
         }
     };
-    
-    AddPlugin ('selection', methods);
-}());
+})());
 

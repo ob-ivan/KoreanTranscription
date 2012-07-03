@@ -29,10 +29,10 @@
                 <title><xsl:value-of select="title"/></title>
                 <link rel="stylesheet" href="style/style.css"/>
                 <script type="text/javascript" src="script/jquery-1.6.2.min.js"></script>
+                <script type="text/javascript" src="script/jquery.addPlugin.js"></script>
+                <script type="text/javascript" src="script/jquery.selection.js"></script>
+                <script type="text/javascript" src="script/jquery.hangulEntry.js"></script>
                 <script type="text/javascript" src="script/Korean.js"></script>
-                <script type="text/javascript" src="script/AddPlugin.js"></script>
-                <script type="text/javascript" src="script/Selection.js"></script>
-                <script type="text/javascript" src="script/HangulEntry.js"></script>
             </head>
             <body>
                 <h1><xsl:value-of select="title"/></h1>
@@ -175,12 +175,15 @@
                 
                 <script type="text/javascript">var korean = new Korean('<xsl:value-of select="active_tab"/>')</script>
                 
+                <!-- TODO: порождать это всё плагином.
+                
                 <div class="entry">
                     <h1>Ввод хангыля</h1>
                     <div  class="keyboard"></div>
                 </div>
                 
                 <script type="text/javascript">var entry = new HangulEntry(korean)</script>
+                -->
             </body>
         </html>
     </xsl:template>

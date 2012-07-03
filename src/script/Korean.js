@@ -15,12 +15,6 @@
  *  h2.text
  *  div.text.container
  *      textarea.korean
- *
- *  interface Korean
- *  {
- *      // Возвращает поле ввода для выбранного в настоящий момент режима.
- *      jQuery getActiveInput();
- *  }
 **/
 var Korean = (function($)
 {
@@ -33,6 +27,8 @@ var Korean = (function($)
                 text_tab = tabs.find('.tab.text'),
                 name_container = $('.name.container'),
                 text_container = $('.text.container'),
+                name_input = name_container.find('.korean'),
+                text_input = text_container.find('.korean'),
                 current_tab = null
             ;
             var inputCache = {};
@@ -59,25 +55,13 @@ var Korean = (function($)
             };
         }
         
-        // public //
-        {
-            this.getActiveInput = function()
-            {
-                if (typeof inputCache[current_tab] === 'undefined')
-                {
-                    inputCache[current_tab] = $('div.' + current_tab + '.container .korean');
-                }
-                return inputCache[current_tab];
-            };
-        }
-        
         // constructor //
         {
-            // switch from noscript version
+            // Switch from noscript version.
             $('h2').hide();
             tabs.show();
             
-            // enable active tab
+            // Enable active tab.
             if (active_tab)
             {
                 if (active_tab == 'name')
@@ -90,9 +74,16 @@ var Korean = (function($)
                 }
             }
             
-            // listen to events
+            // Listen to tab switching.
             name_tab.click(setName);
             text_tab.click(setText);
+            
+            // Activate virtual keyboard in inputs.
+            if ($.fn.hangulEntry)
+            {
+                name_input.hangulEntry().init();
+                text_input.hangulEntry().init();
+            }
             
             // TODO: Convert on client-side.
             // But mantain server-side converter too, for clients without JS.

@@ -1,28 +1,19 @@
 
-// TODO: Remove dependency from Korean. Convert it into a jQuery plugin.
-
 /**
  * Создаёт экранную клавиатуру для побуквенного ввода корейских слогов.
- * Результат набора вставляется в элемент, возвращаемый korean.getActiveInput.
  *
- * Использует jQuery, korean.js.
+ * Requires jQuery, jQuery.addPlugin, jQuery.selection.
  *
- * Ожидаемая раскладка:
+ * TODO: add documentation on layout.
  *  div.entry
  *      div.keyboard
  *
- *  interface HangulEntry
+ *  interface jQuery.fn.hangulEntry
  *  {
- *      HangulEntry (Korean korean);
- *  }
- *
- *  interface Korean
- *  {
- *      // Возвращает поле ввода для выбранного в настоящий момент режима.
- *      jQuery getActiveInput();
+ *      init ();
  *  }
 **/
-var HangulEntry = (function ($)
+jQuery.addPlugin ('hangulEntry', null, (function ($)
 {
     // const //
     {
@@ -556,209 +547,211 @@ var HangulEntry = (function ($)
             }
         };
     }
-                
-    return function HangulEntry (korean)
-    {
-        // init //
-        {
-            if (typeof Korean === 'undefined')
-            {
-                throw new ReferenceError ('HangulEntry: Korean is undefined');
-            }
-            if (! korean instanceof Korean)
-            {
-                throw new TypeError ('HangulEntry: korean must be instance of Korean');
-            }
-            if (typeof $.fn.selection === 'undefined')
-            {
-                throw new Error ('HangulEntry: jQuery selection plugin is not loaded');
-            }
-        }
-        
-        // var //
-        {
-            // elements //
-            var entry    = $('div.entry');
-            var keyboard = entry.find('div.keyboard');
             
-            // lowercase tab and uppercase tab
-            var lowerTab = $('<div class="lower case"></div>');
-            var upperTab = $('<div class="upper case"></div>');
-            var currentTab = lowerTab;
-            
-            // input //
-            var syllableChain = new SyllableChain;
-        }
-        
-        // private //
+    // methods //
+    return {
+        init : function ()
         {
-            var spawnTab = (function()
+            // init //
             {
-                // var //
+                if (typeof $.fn.selection === 'undefined')
                 {
-                    var prevSelection; // instanceof Selection
+                    throw new Error ('jQuery.fn.hangulEntry: required plugin (jQuery.fn.selection) is not defined');
                 }
+            }
+            
+            // var //
+            {
+                // TODO: create layout and insert it into the document
+                // instead of finding it on the page.
                 
-                // private //
+                // elements //
+                var input    = this;
+                
+                var body     = $('body');
+                var entry    = $('<div class="entry"></div>');
+                var keyboard = $('<div class="keyboard"></div>');
+                
+                // lowercase tab and uppercase tab
+                var lowerTab = $('<div class="lower case"></div>');
+                var upperTab = $('<div class="upper case"></div>');
+                var currentTab = lowerTab;
+                
+                // input data //
+                var syllableChain = new SyllableChain;
+            }
+            
+            // private //
+            {
+                var spawnTab = (function()
                 {
-                    var redrawQueue = function redrawQueue()
+                    // var //
                     {
-                        var text = syllableChain.toString();
-                        
-                        // TODO: Заменить результат вместо предыдущего, если он ещё выделен.
-                        // И вообще разобраться с тем, как это всё должно происходить.
-                        
-                        var input = korean.getActiveInput();
-                        prevSelection = input.selection().replace (text);
-                    };
+                        var prevSelection; // instanceof Selection
+                    }
                     
-                    var addJamo = function addJamo (jamo)
+                    // private //
                     {
-                        var input = korean.getActiveInput();
-                        var selection = input.selection().get();
-                        if (prevSelection && ! selection.isEqual (prevSelection))
+                        var redrawQueue = function redrawQueue()
                         {
-                            // Discard jamo data from the chain which was unselected.
-                            syllableChain = new SyllableChain;
+                            var text = syllableChain.toString();
+                            
+                            // TODO: Заменить результат вместо предыдущего, если он ещё выделен.
+                            // И вообще разобраться с тем, как это всё должно происходить.
+                            
+                            prevSelection = input.selection().replace (text);
+                        };
+                        
+                        var addJamo = function addJamo (jamo)
+                        {
+                            var selection = input.selection().get();
+                            if (prevSelection && ! selection.isEqual (prevSelection))
+                            {
+                                // Discard jamo data from the chain which was unselected.
+                                syllableChain = new SyllableChain;
+                            }
+                            
+                            syllableChain.append (jamo);
+                            redrawQueue();
+                        };
+                        
+                        // backspace
+                        var deleteJamo = function deleteJamo()
+                        {
+                            syllableChain.deleteJamo();
+                            redrawQueue();
+                        };
+                        
+                        // BACKSPACE
+                        var deleteSyllable = function deleteSyllable()
+                        {
+                            // TODO
+                        };
+                        
+                        // shift
+                        var showUpperTab = function showUpperTab()
+                        {
+                            if (currentTab === upperTab)
+                            {
+                                return;
+                            }
+                            currentTab.hide();
+                            currentTab = upperTab;
+                            currentTab.show();
+                            
+                            // TODO: Если был нажат "экранный шифт", после нажатия следующей кнопки
+                            // кнопки надо сбросить на нижний регистр. Если клавиатурный -- то оставить.
+                        };
+                        
+                        // SHIFT
+                        var showLowerTab = function showLowerTab()
+                        {
+                            if (currentTab === lowerTab)
+                            {
+                                return;
+                            }
+                            currentTab.hide();
+                            currentTab = lowerTab;
+                            currentTab.show();
+                        };
+                        
+                        // TODO: spacebar
+                        
+                        var getJamoClick = function getJamoClick (jamo)
+                        {
+                            return function ()
+                            {
+                                addJamo (jamo);
+                            };
                         }
                         
-                        syllableChain.append (jamo);
-                        redrawQueue();
-                    };
-                    
-                    // backspace
-                    var deleteJamo = function deleteJamo()
-                    {
-                        syllableChain.deleteJamo();
-                        redrawQueue();
-                    };
-                    
-                    // BACKSPACE
-                    var deleteSyllable = function deleteSyllable()
-                    {
-                        // TODO
-                    };
-                    
-                    // shift
-                    var showUpperTab = function showUpperTab()
-                    {
-                        if (currentTab === upperTab)
+                        var getSpecialClick = function getSpecialClick (key)
                         {
-                            return;
-                        }
-                        currentTab.hide();
-                        currentTab = upperTab;
-                        currentTab.show();
-                        
-                        // TODO: Если был нажат "экранный шифт", после нажатия следующей кнопки
-                        // кнопки надо сбросить на нижний регистр. Если клавиатурный -- то оставить.
-                    };
-                    
-                    // SHIFT
-                    var showLowerTab = function showLowerTab()
-                    {
-                        if (currentTab === lowerTab)
-                        {
-                            return;
-                        }
-                        currentTab.hide();
-                        currentTab = lowerTab;
-                        currentTab.show();
-                    };
-                    
-                    // TODO: spacebar
-                    
-                    var getJamoClick = function getJamoClick (jamo)
-                    {
-                        return function ()
-                        {
-                            addJamo (jamo);
+                            if (key === 'backspace')
+                            {
+                                return deleteJamo;
+                            }
+                            if (key === 'BACKSPACE')
+                            {
+                                return deleteSyllable;
+                            }
+                            if (key === 'shift')
+                            {
+                                return showUpperTab;
+                            }
+                            if (key === 'SHIFT')
+                            {
+                                return showLowerTab;
+                            }
+                            // TODO: spacebar
                         };
                     }
                     
-                    var getSpecialClick = function getSpecialClick (key)
+                    // body //
+                    return function spawnTab (layoutVariant, caseTab)
                     {
-                        if (key === 'backspace')
+                        for (var lineNum = 0, lineCount = layoutVariant.length; lineNum < lineCount; ++lineNum)
                         {
-                            return deleteJamo;
+                            var lineDiv = $('<div class="line line' + lineNum  + '"></div>');
+                            for (var key in layoutVariant[lineNum])
+                            {
+                                if (! layoutVariant[lineNum].hasOwnProperty (key))
+                                {
+                                    continue;
+                                }
+                                
+                                var name = layoutVariant[lineNum][key];
+                                var inner = '';
+                                var click = false;
+                                if (Jamo.exists (name))
+                                {
+                                    // jamo
+                                    var jamo = Jamo.get (name);
+                                    click = getJamoClick (jamo);
+                                    inner =
+                                        '<table class="key">' +
+                                            '<tr>' +
+                                                '<td align="center">' + key + '</td>' +
+                                                '<td align="center">' + jamo.hangul + '</td>' +
+                                            '</tr>' +
+                                            '<tr>' +
+                                                '<td></td>' +
+                                                '<td align="center">' + jamo.cyril + '</td>' +
+                                            '</tr>' +
+                                        '</table>'
+                                    ;
+                                }
+                                else
+                                {
+                                    // specials
+                                    inner = '<table class="key special"><tr><td>' + name + ' ' + key + '</td></tr></table>';
+                                    click = getSpecialClick (key);
+                                }
+                                
+                                var keyDiv = $(inner);
+                                keyDiv.click (click);
+                                // TODO: handle keydown event
+                                lineDiv.append (keyDiv);
+                            }
+                            caseTab.append (lineDiv);
                         }
-                        if (key === 'BACKSPACE')
-                        {
-                            return deleteSyllable;
-                        }
-                        if (key === 'shift')
-                        {
-                            return showUpperTab;
-                        }
-                        if (key === 'SHIFT')
-                        {
-                            return showLowerTab;
-                        }
-                        // TODO: spacebar
+                        return caseTab;
                     };
-                }
+                })();
+            }
+            
+            // constructor //
+            {
+                keyboard.append (spawnTab (layout, lowerTab));
+                keyboard.append (spawnTab (LAYOUT, upperTab));
+                entry.append (keyboard);
+                body.append (entry);
                 
-                // body //
-                return function spawnTab (layoutVariant, caseTab)
-                {
-                    for (var lineNum = 0, lineCount = layoutVariant.length; lineNum < lineCount; ++lineNum)
-                    {
-                        var lineDiv = $('<div class="line line' + lineNum  + '"></div>');
-                        for (var key in layoutVariant[lineNum])
-                        {
-                            if (! layoutVariant[lineNum].hasOwnProperty (key))
-                            {
-                                continue;
-                            }
-                            
-                            var name = layoutVariant[lineNum][key];
-                            var inner = '';
-                            var click = false;
-                            if (Jamo.exists (name))
-                            {
-                                // jamo
-                                var jamo = Jamo.get (name);
-                                click = getJamoClick (jamo);
-                                inner =
-                                    '<table class="key">' +
-                                        '<tr>' +
-                                            '<td align="center">' + key + '</td>' +
-                                            '<td align="center">' + jamo.hangul + '</td>' +
-                                        '</tr>' +
-                                        '<tr>' +
-                                            '<td></td>' +
-                                            '<td align="center">' + jamo.cyril + '</td>' +
-                                        '</tr>' +
-                                    '</table>'
-                                ;
-                            }
-                            else
-                            {
-                                // specials
-                                inner = '<table class="key special"><tr><td>' + name + ' ' + key + '</td></tr></table>';
-                                click = getSpecialClick (key);
-                            }
-                            
-                            var keyDiv = $(inner);
-                            keyDiv.click (click);
-                            // TODO: handle keydown event
-                            lineDiv.append (keyDiv);
-                        }
-                        caseTab.append (lineDiv);
-                    }
-                    keyboard.append (caseTab);
-                };
-            })();
-        }
-        
-        // constructor //
-        {
-            spawnTab (layout, lowerTab);
-            spawnTab (LAYOUT, upperTab);
-            currentTab.show();
-            entry.show();
+                currentTab.show();
+                entry.show();
+            }
         }
     };
     
-})(jQuery);
+})(jQuery));
 
