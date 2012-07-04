@@ -49,10 +49,10 @@
                 <div class="name container">
                     <form method="post">
                         <input type="hidden" name="action" value="name"/>
-                        <table>
+                        <table class="form">
                             <tr>
                                 <td width="48%" valign="top">
-                                    <table>
+                                    <table class="form">
                                         <tr>
                                             <td valign="top">
                                                 <label>
@@ -64,7 +64,7 @@
                                                 <button type="submit">  GO  </button>
                                             </td>
                                             <td>
-                                                <table>
+                                                <table class="form">
                                                     <tr>
                                                         <td align="right" valign="top">
                                                             <label>
@@ -112,10 +112,10 @@
                 <div class="text container">
                     <form method="post">
                         <input type="hidden" name="action" value="text"/>
-                        <table>
+                        <table class="form">
                             <tr>
                                 <td width="48%" valign="top">
-                                    <table>
+                                    <table class="form">
                                         <tr>
                                             <td valign="top">
                                                 <label>
@@ -129,7 +129,7 @@
                                                 <button type="submit">  GO  </button>
                                             </td>
                                             <td>
-                                                <table>
+                                                <table class="form">
                                                     <tr>
                                                         <td align="right" valign="top">
                                                             <label>
@@ -174,16 +174,6 @@
                 </div>
                 
                 <script type="text/javascript">var korean = new Korean('<xsl:value-of select="active_tab"/>')</script>
-                
-                <!-- TODO: порождать это всё плагином.
-                
-                <div class="entry">
-                    <h1>Ввод хангыля</h1>
-                    <div  class="keyboard"></div>
-                </div>
-                
-                <script type="text/javascript">var entry = new HangulEntry(korean)</script>
-                -->
             </body>
         </html>
     </xsl:template>

@@ -2,11 +2,7 @@
 /**
  * Создаёт экранную клавиатуру для побуквенного ввода корейских слогов.
  *
- * Requires jQuery, jQuery.addPlugin, jQuery.selection.
- *
- * TODO: add documentation on layout.
- *  div.entry
- *      div.keyboard
+ * Requires jQuery, jQuery.addPlugin, jQuery.fn.selection.
  *
  *  interface jQuery.fn.hangulEntry
  *  {
@@ -562,14 +558,11 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
             
             // var //
             {
-                // TODO: create layout and insert it into the document
-                // instead of finding it on the page.
-                
                 // elements //
                 var input    = this;
                 
-                var body     = $('body');
-                var entry    = $('<div class="entry"></div>');
+                var entry    = $('<div class="hangulEntry"></div>');
+                var tumbler  = $('<button class="tumbler"></button>');
                 var keyboard = $('<div class="keyboard"></div>');
                 
                 // lowercase tab and uppercase tab
@@ -579,6 +572,9 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                 
                 // input data //
                 var syllableChain = new SyllableChain;
+                
+                // state //
+                var keyboardShown;
             }
             
             // private //
@@ -735,20 +731,64 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                             }
                             caseTab.append (lineDiv);
                         }
+                        caseTab.append ($('<br class="clear"/>'));
                         return caseTab;
                     };
                 })();
+            
+                var showKeyboard = function()
+                {
+                    tumbler
+                        .removeClass ('hide')
+                        .addClass ('show')
+                        .text ('hide keyboard')
+                    ;
+                    keyboard.show();
+                    keyboardShown = true;
+                };
+                
+                var hideKeyboard = function ()
+                {
+                    tumbler
+                        .removeClass ('show')
+                        .addClass ('hide')
+                        .text ('show keyboard')
+                    ;
+                    keyboard.hide();
+                    keyboardShown = false;
+                };
+                
+                var tumblerClick = function ()
+                {
+                    if (keyboardShown)
+                    {
+                        hideKeyboard();
+                    }
+                    else
+                    {
+                        showKeyboard();
+                    }
+                    return false;
+                };
             }
             
             // constructor //
             {
+                tumbler.click (tumblerClick);
+                entry.append (tumbler);
+                // TODO: preserve keyboard state after posting.
+                hideKeyboard();
+                
                 keyboard.append (spawnTab (layout, lowerTab));
                 keyboard.append (spawnTab (LAYOUT, upperTab));
                 entry.append (keyboard);
-                body.append (entry);
+                
+                input.after (entry);
                 
                 currentTab.show();
                 entry.show();
+                
+                // TODO: listen to keyboard events when keyboard is shown.
             }
         }
     };

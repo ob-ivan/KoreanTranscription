@@ -13,7 +13,7 @@ jQuery.addPlugin = (function ($)
     // const //
     {
         var defaultOptions = {
-            useCache : false
+            useCache : true
         };
     }
     

@@ -3,7 +3,7 @@
  * Превращает страницу с двумя видимыми формами в страничку с одной формой,
  * переключаемой табами между двумя режимами.
  *
- * Использует jQuery.
+ * Использует jQuery, jQuery.fn.hangulEntry.
  *
  * Ожидает такой раскладки страницы:
  *  div.tabs
@@ -78,7 +78,7 @@ var Korean = (function($)
             name_tab.click(setName);
             text_tab.click(setText);
             
-            // Activate virtual keyboard in inputs.
+            // Activate virtual keyboard for inputs.
             if ($.fn.hangulEntry)
             {
                 name_input.hangulEntry().init();

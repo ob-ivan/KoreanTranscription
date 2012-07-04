@@ -32,20 +32,28 @@ h2 { clear : both }
 .tabs div.filler { min-width: 1px; margin: 3px }
 
 /* поля форм */
-.container table { width: 100% }
+.container table.form { width: 100% }
 .container input { width: 90%; margin: 1px }
 .container textarea { width: 90%; margin: 1px }
 
 /* экранная клавиатура */
-div.entry { display : none }
-div.entry div.keyboard div.case {
+div.hangulEntry {
+    display : none;
+    position: absolute;
+}
+div.hangulEntry div.keyboard {
+    background : #fff;
+    border: 1px black solid;
+}
+div.hangulEntry div.keyboard div.case {
     display : none;
     width   : 800px;
 }
-div.entry div.keyboard div.line { clear: both }
-div.entry div.keyboard div.line1 { padding-left : 25px; }
-div.entry div.keyboard div.line2 { padding-left : 50px; }
-div.entry div.keyboard div.line .key {
+div.hangulEntry div.keyboard div.case br.clear { clear: both }
+div.hangulEntry div.keyboard div.case div.line { clear: both }
+div.hangulEntry div.keyboard div.case div.line1 { padding-left : 25px; }
+div.hangulEntry div.keyboard div.case div.line2 { padding-left : 50px; }
+div.hangulEntry div.keyboard div.case div.line .key {
     min-width   : 60px;
     margin      : 3px;
     border      : 1px solid black;
@@ -53,7 +61,7 @@ div.entry div.keyboard div.line .key {
     float       : left;
     cursor      : pointer;
 }
-div.entry div.keyboard div.line .key.special {
+div.hangulEntry div.keyboard div.case div.line .key.special {
     float   : right;
     height  : 50px;
 }
