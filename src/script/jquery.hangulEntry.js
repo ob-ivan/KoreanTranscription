@@ -118,8 +118,6 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                     Eu  : { vowel : 18,            hangul : 'ㅡ', cyril : 'ы' },
                     EuI : { vowel : 19,            hangul : 'ㅢ' },
                     I   : { vowel : 20,            hangul : 'ㅣ', cyril : 'и' }
-                    
-                    // TODO: dot vowel
                 };
             }
             
@@ -203,6 +201,7 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                 **/
                 var queue = {};
                 var prevSyllable, // instanceof Syllable
+                    thisSyllable = this,
                     nextSyllable; // instanceof Syllable
                 
                 /**
@@ -285,7 +284,7 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
             {
                 /**
                  *  @param  {Jamo}      jamo
-                 *  @return {Syllable}          reference to the new tail.
+                 *  @return {Syllable}  reference to the new tail.
                 **/
                 this.append = function append (jamo)
                 {
@@ -466,6 +465,48 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                     }
                 };
                 
+                /**
+                 *  @return {Syllable}  reference to the new tail.
+                **/
+                this.deleteJamo = (function()
+                {
+                    // const //
+                    var removeOrder = [PART_LAST, PART_VOWEL, PART_FIRST];
+                    
+                    // body //
+                    return function deleteJamo ()
+                    {
+                        if (nextSyllable)
+                        {
+                            var tail = nextSyllable.deleteJamo();
+                            if (tail === thisSyllable)
+                            {
+                                nextSyllable = null;
+                            }
+                            return tail;
+                        }
+                        
+                        for (var i = 0; i < removeOrder.length; ++i)
+                        {
+                            if (queue[removeOrder[i]].length > 0)
+                            {
+                                queue[removeOrder[i]].pop();
+                                compilePart(removeOrder[i]);
+                                break;
+                            }
+                        }
+                        
+                        if (! hangul.length)
+                        {
+                            // Syllable is empty, delete it.
+                            return prevSyllable;
+                        }
+                        
+                        // Syllable is not empty, it is still the tail.
+                        return thisSyllable;
+                    };
+                })();
+                
                 this.toString = function toString()
                 {
                     return hangul;
@@ -512,7 +553,7 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                             result += syllable;
                         }
                     }
-                    return result;
+                    hangul = result;
                 };
             }
             
@@ -530,10 +571,27 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                         head = tail = new Syllable;
                     }
                     tail = tail.append (jamo);
-                    hangul = makeHangul();
+                    makeHangul();
                 };
                 
-                // TODO: this.deleteJamo
+                this.deleteJamo = function deleteJamo ()
+                {
+                    if (! tail)
+                    {
+                        return;
+                    }
+                    var newTail = tail.deleteJamo();
+                    if (! newTail)
+                    {
+                        head = tail = null;
+                    }
+                    else
+                    {
+                        tail = newTail;
+                    }
+                    makeHangul();
+                };
+                
                 // TODO: this.deleteSyllable
                 
                 this.toString = function toString()
@@ -590,12 +648,7 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                     {
                         var redrawQueue = function redrawQueue()
                         {
-                            var text = syllableChain.toString();
-                            
-                            // TODO: Заменить результат вместо предыдущего, если он ещё выделен.
-                            // И вообще разобраться с тем, как это всё должно происходить.
-                            
-                            prevSelection = input.selection().replace (text);
+                            prevSelection = input.selection().replace (syllableChain.toString());
                         };
                         
                         var addJamo = function addJamo (jamo)
@@ -614,6 +667,14 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                         // backspace
                         var deleteJamo = function deleteJamo()
                         {
+                            var selection = input.selection().get();
+                            if (prevSelection && ! selection.isEqual (prevSelection))
+                            {
+                                // Discard jamo data from the chain which was unselected.
+                                syllableChain = new SyllableChain;
+                                // TODO: passthru the backspace event to the input.
+                            }
+                            
                             syllableChain.deleteJamo();
                             redrawQueue();
                         };
