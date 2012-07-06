@@ -35,7 +35,14 @@
                 <script type="text/javascript" src="script/Korean.js"></script>
             </head>
             <body>
-                <h1><xsl:value-of select="title"/></h1>
+                <h1>
+                    <xsl:value-of select="title"/>
+                    <span style="font-size: small; margin-left: 5px; vertical-align: top; font-weight: normal">
+                        <a href="https://github.com/ob-ivan/KoreanTranscription/tree/virtualkeyboard" target="_blank">
+                            <xsl:text>[Страница проекта]</xsl:text>
+                        </a>
+                    </span>
+                </h1>
                 
                 <div class="tabs">
                     <div class="filler">Режим транскрипции:</div>
