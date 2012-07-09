@@ -24,13 +24,13 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
         var layout = [
             { q : 'B',  w : 'J',  e : 'D',  r : 'G',  t : 'S',  y : 'Yo', u : 'Yeo', i : 'Ya', o : 'Ae', p : 'E', backspace : '&larr;' },
             { a : 'M',  s : 'N',  d : 'Ng', f : 'R',  g : 'H',  h : 'O',  j : 'Eo',  k : 'A',  l : 'I',           shift     : '&uarr;' },
-            { z : 'Kh', x : 'Th', c : 'Ch', v : 'Ph', b : 'Yu', n : 'U',  m : 'Eu',                               space     : '_'      }
+            { z : 'Kh', x : 'Th', c : 'Ch', v : 'Ph', b : 'Yu', n : 'U',  m : 'Eu',                               spacebar  : '_'      }
         ];
         
         var LAYOUT = [
             { Q : 'BB', W : 'JJ', E : 'DD', R : 'GG', T : 'SS', Y : 'Yo', U : 'Yeo', I : 'Ya', O : 'Yae', P : 'Ye', BACKSPACE : '&larr;' },
             { A : 'M',  S : 'N',  D : 'Ng', F : 'R',  G : 'H',  H : 'O',  J : 'Eo',  K : 'A',  L : 'I',             SHIFT     : '&uarr;' },
-            { Z : 'Kh', X : 'Th', C : 'Ch', V : 'Ph', B : 'Yu', N : 'U',  M : 'Eu',                                 SPACE     : '_'      }
+            { Z : 'Kh', X : 'Th', C : 'Ch', V : 'Ph', B : 'Yu', N : 'U',  M : 'Eu',                                 SPACEBAR  : '_'      }
         ];
     }
     
@@ -507,6 +507,23 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                     };
                 })();
                 
+                this.deleteSyllable = function deleteSyllable()
+                {
+                    if (nextSyllable)
+                    {
+                        var tail = nextSyllable.deleteSyllable();
+                        if (tail === thisSyllable)
+                        {
+                            nextSyllable = null;
+                        }
+                        return tail;
+                    }
+                    else
+                    {
+                        return prevSyllable;
+                    }
+                };
+                
                 this.toString = function toString()
                 {
                     return hangul;
@@ -576,11 +593,11 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                 
                 this.deleteJamo = function deleteJamo ()
                 {
-                    if (! tail)
+                    if (! head)
                     {
                         return;
                     }
-                    var newTail = tail.deleteJamo();
+                    var newTail = head.deleteJamo();
                     if (! newTail)
                     {
                         head = tail = null;
@@ -592,7 +609,23 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                     makeHangul();
                 };
                 
-                // TODO: this.deleteSyllable
+                this.deleteSyllable = function deleteSyllable ()
+                {
+                    if (! head)
+                    {
+                        return;
+                    }
+                    var newTail = head.deleteSyllable();
+                    if (! newTail)
+                    {
+                        head = tail = null;
+                    }
+                    else
+                    {
+                        tail = newTail;
+                    }
+                    makeHangul();
+                };
                 
                 this.toString = function toString()
                 {
@@ -628,6 +661,9 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                 var upperTab = $('<div class="upper case"></div>');
                 var currentTab = lowerTab;
                 
+                // handlers //
+                var selectionPlugin = input.selection();
+                
                 // input data //
                 var syllableChain = new SyllableChain;
                 
@@ -648,12 +684,12 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                     {
                         var redrawQueue = function redrawQueue()
                         {
-                            prevSelection = input.selection().replace (syllableChain.toString());
+                            return selectionPlugin.replace (syllableChain.toString());
                         };
                         
                         var addJamo = function addJamo (jamo)
                         {
-                            var selection = input.selection().get();
+                            var selection = selectionPlugin.get();
                             if (prevSelection && ! selection.isEqual (prevSelection))
                             {
                                 // Discard jamo data from the chain which was unselected.
@@ -661,28 +697,68 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                             }
                             
                             syllableChain.append (jamo);
-                            redrawQueue();
+                            prevSelection = redrawQueue();
+                        };
+                        
+                        /**
+                         * Simulate standard backspace behaviour in the input:
+                         *  - if no selection is set, select a character preceeding the cursor's position.
+                         *  - wipe current selection clean.
+                        **/
+                        var simulateBackspace = function simulateBackspace()
+                        {
+                            var selection = selectionPlugin.get();
+                            if (! selection.length)
+                            {
+                                // Select preceeding character, if any.
+                                if (selection.start)
+                                {
+                                    selection = selectionPlugin.set (selection.start - 1, selection.end);
+                                }
+                            }
+                            
+                            // Wipe out selection contents.
+                            return selectionPlugin.replace('');
                         };
                         
                         // backspace
                         var deleteJamo = function deleteJamo()
                         {
-                            var selection = input.selection().get();
-                            if (prevSelection && ! selection.isEqual (prevSelection))
-                            {
+                            var selection = selectionPlugin.get();
+                            if (! selection.length ||
+                                (prevSelection && ! selection.isEqual (prevSelection))
+                            ) {
                                 // Discard jamo data from the chain which was unselected.
                                 syllableChain = new SyllableChain;
-                                // TODO: passthru the backspace event to the input.
+                                
+                                // Simulate the backspace event to the input.
+                                prevSelection = simulateBackspace();
                             }
-                            
-                            syllableChain.deleteJamo();
-                            redrawQueue();
+                            else
+                            {
+                                syllableChain.deleteJamo();
+                                prevSelection = redrawQueue();
+                            }
                         };
                         
                         // BACKSPACE
                         var deleteSyllable = function deleteSyllable()
                         {
-                            // TODO
+                            var selection = selectionPlugin.get();
+                            if (! selection.length ||
+                                (prevSelection && ! selection.isEqual (prevSelection))
+                            ) {
+                                // Discard jamo data from the chain which was unselected.
+                                syllableChain = new SyllableChain;
+                                
+                                // Simulate the backspace event to the input.
+                                prevSelection = simulateBackspace();
+                            }
+                            else
+                            {
+                                syllableChain.deleteSyllable();
+                                prevSelection = redrawQueue();
+                            }
                         };
                         
                         // shift
@@ -712,7 +788,19 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                             currentTab.show();
                         };
                         
-                        // TODO: spacebar
+                        var insertSpace = function insertSpace()
+                        {
+                            var selection = selectionPlugin.get();
+                            if (! (prevSelection && ! selection.isEqual (prevSelection)))
+                            {
+                                selection = selectionPlugin.set (selection.end, selection.end);
+                            }
+                            
+                            // Discard jamo data.
+                            syllableChain = new SyllableChain;
+                            selection = selectionPlugin.replace(' ');
+                            prevSelection = selectionPlugin.set (selection.end, selection.end);
+                        };
                         
                         var getJamoClick = function getJamoClick (jamo)
                         {
@@ -740,7 +828,10 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                             {
                                 return showLowerTab;
                             }
-                            // TODO: spacebar
+                            if (key === 'spacebar' || key === 'SPACEBAR')
+                            {
+                                return insertSpace;
+                            }
                         };
                     }
                     

@@ -12,11 +12,6 @@ I am currently building a jQuery plugin which lets you input hangul syllables
 on a virtual keyboard floating next to the input field.
 
 Todo list:
-- Bug: after having a syllable backspaced it requires one extra backspace press to proceed
-  to the previous syllable.
-- Passthru (or simulate) backspace event when current syllable chain had been deselected.
-- Implement `deleteSyllable` method.
-- Implement spacebar.
 - Track `onKeyDown` events for input fields.
 - Depress shift button if it had been pressed with a click, not keydown event.
 - Preserve virtual keyboard state (shown, hidden) after posting.
