@@ -12,7 +12,9 @@ I am currently building a jQuery plugin which lets you input hangul syllables
 on a virtual keyboard floating next to the input field.
 
 Todo list:
-- Passthru backspace event when current syllable chain had been deselected.
+- Bug: after having a syllable backspaced it requires one extra backspace press to proceed
+  to the previous syllable.
+- Passthru (or simulate) backspace event when current syllable chain had been deselected.
 - Implement `deleteSyllable` method.
 - Implement spacebar.
 - Track `onKeyDown` events for input fields.
@@ -21,4 +23,4 @@ Todo list:
 
 Future objective:
 - Full client-side transcription. Current server-side transcription will be
-preserved in order to support agents with poor or absent javascript implementation.
+  preserved in order to support agents with poor or absent javascript implementation.
