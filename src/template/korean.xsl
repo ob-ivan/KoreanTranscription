@@ -15,7 +15,7 @@
         indent="no"
         encoding="utf-8"
         doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
-        omit-xml-declaration="no"
+        omit-xml-declaration="yes"
     />
     
     <xsl:template match="/">
@@ -28,8 +28,9 @@
                 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
                 <title><xsl:value-of select="title"/></title>
                 <link rel="stylesheet" href="style/style.css"/>
-                <script type="text/javascript" src="script/jquery-1.6.2.min.js"></script>
+                <script type="text/javascript" src="script/jquery-1.7.2.min.js"></script>
                 <script type="text/javascript" src="script/jquery.addPlugin.js"></script>
+                <script type="text/javascript" src="script/jquery.color.js"></script>
                 <script type="text/javascript" src="script/jquery.selection.js"></script>
                 <script type="text/javascript" src="script/jquery.hangulEntry.js"></script>
                 <script type="text/javascript" src="script/Korean.js"></script>
@@ -37,7 +38,12 @@
             <body>
                 <h1>
                     <xsl:value-of select="title"/>
-                    <span style="font-size: small; margin-left: 5px; vertical-align: top; font-weight: normal">
+                    <span class="super">
+                        <a href="https://ob-ivan.ru/korean/">
+                            <xsl:text>[Основная версия]</xsl:text>
+                        </a>
+                    </span>
+                    <span class="super">
                         <a href="https://github.com/ob-ivan/KoreanTranscription/tree/virtualkeyboard" target="_blank">
                             <xsl:text>[Страница проекта]</xsl:text>
                         </a>

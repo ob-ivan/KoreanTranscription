@@ -4,6 +4,14 @@ br { line-height : 3em }
 
 .help p { margin-bottom: 5px }
 
+/* заголовок */
+h1 span.super {
+    font-size: small;
+    margin-left: 5px;
+    vertical-align: top;
+    font-weight: normal;
+}
+
 /* общее для обеих форм */
 h2 { clear : both }
 .container { clear: both }

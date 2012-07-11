@@ -6,7 +6,7 @@
  *
  *  interface jQuery.fn.hangulEntry
  *  {
- *      init ();
+ *      void init ();
  *  }
 **/
 jQuery.addPlugin ('hangulEntry', null, (function ($)
@@ -26,12 +26,25 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
             { a : 'M',  s : 'N',  d : 'Ng', f : 'R',  g : 'H',  h : 'O',  j : 'Eo',  k : 'A',  l : 'I',           shift     : '&uarr;' },
             { z : 'Kh', x : 'Th', c : 'Ch', v : 'Ph', b : 'Yu', n : 'U',  m : 'Eu',                               spacebar  : '_'      }
         ];
-        
         var LAYOUT = [
             { Q : 'BB', W : 'JJ', E : 'DD', R : 'GG', T : 'SS', Y : 'Yo', U : 'Yeo', I : 'Ya', O : 'Yae', P : 'Ye', BACKSPACE : '&larr;' },
             { A : 'M',  S : 'N',  D : 'Ng', F : 'R',  G : 'H',  H : 'O',  J : 'Eo',  K : 'A',  L : 'I',             SHIFT     : '&uarr;' },
             { Z : 'Kh', X : 'Th', C : 'Ch', V : 'Ph', B : 'Yu', N : 'U',  M : 'Eu',                                 SPACEBAR  : '_'      }
         ];
+        
+        // TODO: add enter button
+        /*
+        var layout = [
+            { q : 'B',  w : 'J',  e : 'D',  r : 'G',  t : 'S',  y : 'Yo', u : 'Yeo', i : 'Ya', o : 'Ae', p : 'E', backspace : '&larr;'   },
+            { a : 'M',  s : 'N',  d : 'Ng', f : 'R',  g : 'H',  h : 'O',  j : 'Eo',  k : 'A',  l : 'I',           enter     : '&#x21b5;' },
+            { z : 'Kh', x : 'Th', c : 'Ch', v : 'Ph', b : 'Yu', n : 'U',  m : 'Eu',             shift : '&uarr;', spacebar  : '_'        }
+        ];
+        var LAYOUT = [
+            { Q : 'BB', W : 'JJ', E : 'DD', R : 'GG', T : 'SS', Y : 'Yo', U : 'Yeo', I : 'Ya', O : 'Yae', P : 'Ye', BACKSPACE : '&larr;'   },
+            { A : 'M',  S : 'N',  D : 'Ng', F : 'R',  G : 'H',  H : 'O',  J : 'Eo',  K : 'A',  L : 'I',             ENTER     : '&#X21B5;' },
+            { Z : 'Kh', X : 'Th', C : 'Ch', V : 'Ph', B : 'Yu', N : 'U',  M : 'Eu',               SHIFT : '&uarr;', SPACEBAR  : '_'        }
+        ];
+        */
     }
     
     // private //
@@ -678,161 +691,227 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                     // var //
                     {
                         var prevSelection; // instanceof Selection
+                        var depressShift;  // boolean
                     }
                     
                     // private //
                     {
-                        var redrawQueue = function redrawQueue()
+                        // implementation //
                         {
-                            return selectionPlugin.replace (syllableChain.toString());
-                        };
-                        
-                        var addJamo = function addJamo (jamo)
-                        {
-                            var selection = selectionPlugin.get();
-                            if (prevSelection && ! selection.isEqual (prevSelection))
+                            var redrawQueue = function redrawQueue()
                             {
-                                // Discard jamo data from the chain which was unselected.
-                                syllableChain = new SyllableChain;
-                            }
+                                return selectionPlugin.replace (syllableChain.toString());
+                            };
                             
-                            syllableChain.append (jamo);
-                            prevSelection = redrawQueue();
-                        };
-                        
-                        /**
-                         * Simulate standard backspace behaviour in the input:
-                         *  - if no selection is set, select a character preceeding the cursor's position.
-                         *  - wipe current selection clean.
-                        **/
-                        var simulateBackspace = function simulateBackspace()
-                        {
-                            var selection = selectionPlugin.get();
-                            if (! selection.length)
+                            /**
+                             * Simulate standard backspace behaviour in the input:
+                             *  - if no selection is set, select a character preceeding the cursor's position.
+                             *  - wipe current selection clean.
+                            **/
+                            var simulateBackspace = function simulateBackspace()
                             {
-                                // Select preceeding character, if any.
-                                if (selection.start)
+                                var selection = selectionPlugin.get();
+                                if (! selection.length)
                                 {
-                                    selection = selectionPlugin.set (selection.start - 1, selection.end);
+                                    // Select preceeding character, if any.
+                                    if (selection.start)
+                                    {
+                                        selection = selectionPlugin.set (selection.start - 1, selection.end);
+                                    }
                                 }
-                            }
-                            
-                            // Wipe out selection contents.
-                            return selectionPlugin.replace('');
-                        };
-                        
-                        // backspace
-                        var deleteJamo = function deleteJamo()
-                        {
-                            var selection = selectionPlugin.get();
-                            if (! selection.length ||
-                                (prevSelection && ! selection.isEqual (prevSelection))
-                            ) {
-                                // Discard jamo data from the chain which was unselected.
-                                syllableChain = new SyllableChain;
                                 
-                                // Simulate the backspace event to the input.
-                                prevSelection = simulateBackspace();
-                            }
-                            else
-                            {
-                                syllableChain.deleteJamo();
-                                prevSelection = redrawQueue();
-                            }
-                        };
-                        
-                        // BACKSPACE
-                        var deleteSyllable = function deleteSyllable()
-                        {
-                            var selection = selectionPlugin.get();
-                            if (! selection.length ||
-                                (prevSelection && ! selection.isEqual (prevSelection))
-                            ) {
-                                // Discard jamo data from the chain which was unselected.
-                                syllableChain = new SyllableChain;
-                                
-                                // Simulate the backspace event to the input.
-                                prevSelection = simulateBackspace();
-                            }
-                            else
-                            {
-                                syllableChain.deleteSyllable();
-                                prevSelection = redrawQueue();
-                            }
-                        };
-                        
-                        // shift
-                        var showUpperTab = function showUpperTab()
-                        {
-                            if (currentTab === upperTab)
-                            {
-                                return;
-                            }
-                            currentTab.hide();
-                            currentTab = upperTab;
-                            currentTab.show();
-                            
-                            // TODO: Если был нажат "экранный шифт", после нажатия следующей кнопки
-                            // кнопки надо сбросить на нижний регистр. Если клавиатурный -- то оставить.
-                        };
-                        
-                        // SHIFT
-                        var showLowerTab = function showLowerTab()
-                        {
-                            if (currentTab === lowerTab)
-                            {
-                                return;
-                            }
-                            currentTab.hide();
-                            currentTab = lowerTab;
-                            currentTab.show();
-                        };
-                        
-                        var insertSpace = function insertSpace()
-                        {
-                            var selection = selectionPlugin.get();
-                            if (! (prevSelection && ! selection.isEqual (prevSelection)))
-                            {
-                                selection = selectionPlugin.set (selection.end, selection.end);
-                            }
-                            
-                            // Discard jamo data.
-                            syllableChain = new SyllableChain;
-                            selection = selectionPlugin.replace(' ');
-                            prevSelection = selectionPlugin.set (selection.end, selection.end);
-                        };
-                        
-                        var getJamoClick = function getJamoClick (jamo)
-                        {
-                            return function ()
-                            {
-                                addJamo (jamo);
+                                // Wipe out selection contents.
+                                return selectionPlugin.replace('');
                             };
                         }
                         
-                        var getSpecialClick = function getSpecialClick (key)
+                        // performed actions //
                         {
-                            if (key === 'backspace')
+                            // characters
+                            var addJamo = function addJamo (jamo)
                             {
-                                return deleteJamo;
-                            }
-                            if (key === 'BACKSPACE')
+                                var selection = selectionPlugin.get();
+                                if (prevSelection && ! selection.isEqual (prevSelection))
+                                {
+                                    // Discard jamo data from the chain which was unselected.
+                                    syllableChain = new SyllableChain;
+                                }
+                                
+                                syllableChain.append (jamo);
+                                prevSelection = redrawQueue();
+                                
+                                if (depressShift)
+                                {
+                                    showLowerTab();
+                                }
+                            };
+                            
+                            // backspace
+                            var deleteJamo = function deleteJamo()
                             {
-                                return deleteSyllable;
-                            }
-                            if (key === 'shift')
+                                var selection = selectionPlugin.get();
+                                if (! selection.length ||
+                                    (prevSelection && ! selection.isEqual (prevSelection))
+                                ) {
+                                    // Discard jamo data from the chain which was unselected.
+                                    syllableChain = new SyllableChain;
+                                    
+                                    // Simulate the backspace event to the input.
+                                    prevSelection = simulateBackspace();
+                                }
+                                else
+                                {
+                                    syllableChain.deleteJamo();
+                                    prevSelection = redrawQueue();
+                                }
+                                if (depressShift)
+                                {
+                                    showLowerTab();
+                                }
+                            };
+                            
+                            // BACKSPACE
+                            var deleteSyllable = function deleteSyllable()
                             {
-                                return showUpperTab;
-                            }
-                            if (key === 'SHIFT')
+                                var selection = selectionPlugin.get();
+                                if (! selection.length ||
+                                    (prevSelection && ! selection.isEqual (prevSelection))
+                                ) {
+                                    // Discard jamo data from the chain which was unselected.
+                                    syllableChain = new SyllableChain;
+                                    
+                                    // Simulate the backspace event to the input.
+                                    prevSelection = simulateBackspace();
+                                }
+                                else
+                                {
+                                    syllableChain.deleteSyllable();
+                                    prevSelection = redrawQueue();
+                                }
+                                if (depressShift)
+                                {
+                                    showLowerTab();
+                                }
+                            };
+                            
+                            // shift
+                            var getShowUpperTab = function getShowUpperTab (keydown)
                             {
-                                return showLowerTab;
-                            }
-                            if (key === 'spacebar' || key === 'SPACEBAR')
+                                return function showUpperTab()
+                                {
+                                    if (currentTab === upperTab)
+                                    {
+                                        return;
+                                    }
+                                    currentTab.hide();
+                                    currentTab = upperTab;
+                                    currentTab.show();
+                                    
+                                    if (prevSelection)
+                                    {
+                                        // For some reason selection resets in FF.
+                                        // Restore it to avoid removal of input contents.
+                                        selectionPlugin.set (prevSelection.start, prevSelection.end);
+                                    }
+                                    
+                                    /**
+                                     * If shift is being clicked on the screen, it should be depressed after
+                                     * the next input. Otherwise it is preserved.
+                                    **/
+                                    depressShift = ! keydown;
+                                };
+                            };
+                            
+                            // SHIFT
+                            var showLowerTab = function showLowerTab()
                             {
-                                return insertSpace;
+                                if (currentTab === lowerTab)
+                                {
+                                    return;
+                                }
+                                currentTab.hide();
+                                currentTab = lowerTab;
+                                currentTab.show();
+                                
+                                if (prevSelection)
+                                {
+                                    // For some reason selection resets in FF.
+                                    // Restore it to avoid removal of input contents.
+                                    selectionPlugin.set (prevSelection.start, prevSelection.end);
+                                }
+                            };
+                            
+                            // space/SPACE
+                            var insertSpace = function insertSpace()
+                            {
+                                var selection = selectionPlugin.get();
+                                if (! (prevSelection && ! selection.isEqual (prevSelection)))
+                                {
+                                    selection = selectionPlugin.set (selection.end, selection.end);
+                                }
+                                
+                                // Discard jamo data.
+                                syllableChain = new SyllableChain;
+                                selection = selectionPlugin.replace(' ');
+                                prevSelection = selectionPlugin.set (selection.end, selection.end);
+                                
+                                if (depressShift)
+                                {
+                                    showLowerTab();
+                                }
+                            };
+                        }
+                        
+                        // attached handlers //
+                        {
+                            var getJamoHandler = function getJamoHandler (jamo)
+                            {
+                                return function ()
+                                {
+                                    addJamo (jamo);
+                                };
                             }
-                        };
+                            
+                            /**
+                             *  @param  {string}    key     key from layout/LAYOUT consts.
+                             *  @param  {boolean}   keydown whether it is keydown event that is being handled.
+                            **/
+                            var getSpecialHandler = function getSpecialHandler (key, keydown)
+                            {
+                                if (key === 'backspace')
+                                {
+                                    return deleteJamo;
+                                }
+                                if (key === 'BACKSPACE')
+                                {
+                                    return deleteSyllable;
+                                }
+                                if (key === 'shift')
+                                {
+                                    return getShowUpperTab (keydown);
+                                }
+                                if (key === 'SHIFT')
+                                {
+                                    return showLowerTab;
+                                }
+                                if (key === 'spacebar' || key === 'SPACEBAR')
+                                {
+                                    return insertSpace;
+                                }
+                            };
+                        
+                            var decorateHandler = function decorateHandler (handler)
+                            {
+                                return function onPress ()
+                                {
+                                    $(this)
+                                        .css        ({ backgroundColor : '#aff' })
+                                        .animate    ({ backgroundColor : '#fff' })
+                                    ;
+                                    handler();
+                                }
+                            };
+                        }
                     }
                     
                     // body //
@@ -850,12 +929,12 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                                 
                                 var name = layoutVariant[lineNum][key];
                                 var inner = '';
-                                var click = false;
+                                var handler = false;
                                 if (Jamo.exists (name))
                                 {
                                     // jamo
                                     var jamo = Jamo.get (name);
-                                    click = getJamoClick (jamo);
+                                    handler = getJamoHandler (jamo);
                                     inner =
                                         '<table class="key">' +
                                             '<tr>' +
@@ -873,12 +952,14 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
                                 {
                                     // specials
                                     inner = '<table class="key special"><tr><td>' + name + ' ' + key + '</td></tr></table>';
-                                    click = getSpecialClick (key);
+                                    handler = getSpecialHandler (key);
                                 }
                                 
                                 var keyDiv = $(inner);
-                                keyDiv.click (click);
-                                // TODO: handle keydown event
+                                if (handler)
+                                {
+                                    keyDiv.click (decorateHandler (handler));
+                                }
                                 lineDiv.append (keyDiv);
                             }
                             caseTab.append (lineDiv);
@@ -928,9 +1009,11 @@ jQuery.addPlugin ('hangulEntry', null, (function ($)
             {
                 tumbler.click (tumblerClick);
                 entry.append (tumbler);
+                
                 // TODO: preserve keyboard state after posting.
                 hideKeyboard();
                 
+                // TODO: determine whether input is multiline and add enter button if it is.
                 keyboard.append (spawnTab (layout, lowerTab));
                 keyboard.append (spawnTab (LAYOUT, upperTab));
                 entry.append (keyboard);
