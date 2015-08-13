@@ -2,7 +2,7 @@
 p  { margin : 0 }
 br { line-height : 3em }
 
-.help p { margin-bottom: 5px }
+.help p { margin-bottom: 10px }
 
 /* заголовок */
 h1 span.super {
