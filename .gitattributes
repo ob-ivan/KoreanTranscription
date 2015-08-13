@@ -1,0 +1,10 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# In fact I would like to keep text files in Unix style.
+*.php text eol=lf
+*.js  text eol=lf
+*.xsl text eol=lf
+*.css text eol=lf
+*.log text eol=lf
+

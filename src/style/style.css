@@ -4,6 +4,14 @@ br { line-height : 3em }
 
 .help p { margin-bottom: 5px }
 
+/* заголовок */
+h1 span.super {
+    font-size: small;
+    margin-left: 5px;
+    vertical-align: top;
+    font-weight: normal;
+}
+
 /* общее для обеих форм */
 h2 { clear : both }
 .container { clear: both }
@@ -15,7 +23,7 @@ h2 { clear : both }
 }
 .tabs div {
     float: left; 
-    padding: 3px 7px;
+    padding: 3px 8px;
     height: 20px;
 }
 .tabs div.tab { 
@@ -29,9 +37,42 @@ h2 { clear : both }
     border: 3px double #000;
     margin: 0px;
 }
-.tabs div.filler { width: 5px }
+.tabs div.filler { min-width: 1px; margin: 3px }
 
 /* поля форм */
-.container table { width: 100% }
+.container table.form { width: 100% }
 .container input { width: 90%; margin: 1px }
 .container textarea { width: 90%; margin: 1px }
+
+/* экранная клавиатура */
+div.hangulEntry {
+    display : none;
+    position: absolute;
+}
+div.hangulEntry div.keyboard {
+    background : #fff;
+    border: 1px black solid;
+}
+div.hangulEntry div.keyboard div.case {
+    display : none;
+    width   : 800px;
+}
+div.hangulEntry div.keyboard div.case br.clear { clear: both }
+div.hangulEntry div.keyboard div.case div.line { clear: both }
+div.hangulEntry div.keyboard div.case div.line1 { padding-left : 25px; }
+div.hangulEntry div.keyboard div.case div.line2 { padding-left : 50px; }
+div.hangulEntry div.keyboard div.case div.line .key {
+    min-width   : 60px;
+    margin      : 3px;
+    border      : 1px solid black;
+    padding     : 0 5px;
+    float       : left;
+    cursor      : pointer;
+}
+div.hangulEntry div.keyboard div.case div.line .key.special {
+    float   : right;
+    height  : 50px;
+}
+
+/* конец экранной клавиатуры */
+
