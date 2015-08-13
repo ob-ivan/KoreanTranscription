@@ -39,7 +39,7 @@
                 <h1>
                     <xsl:value-of select="title"/>
                     <span class="super">
-                        <a href="https://github.com/ob-ivan/KoreanTranscription/tree/virtualkeyboard" target="_blank">
+                        <a href="https://github.com/ob-ivan/KoreanTranscription" target="_blank">
                             <xsl:text>[Страница проекта]</xsl:text>
                         </a>
                     </span>
