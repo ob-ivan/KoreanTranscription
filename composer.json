@@ -1,0 +1,9 @@
+{
+    "name": "KoreanTranscription",
+    "description": "Convert Korean names and texts written in Hangul to Cyrillic / Latin transcription",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}
