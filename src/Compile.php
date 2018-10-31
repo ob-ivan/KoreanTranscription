@@ -1,7 +1,11 @@
 <?php
 namespace Ob_Ivan\KoreanTranscription;
 
-/**
+use DOMDocument;
+use Exception;
+use XSLTProcessor;
+
+/*
 
 Формирует аутпут из входного массива и файла XSL-шаблона.
 
@@ -22,9 +26,7 @@ $output = $compile->getOutput();
 $compile = new Compile($templatePath, $templateName, $data);
 $output = $compile->getOutput();
 
-----
-
-**/
+*/
 class Compile
 {
     private $templatePath = '';
