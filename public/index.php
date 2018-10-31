@@ -1,35 +1,23 @@
 <?php
+use Ob_Ivan\KoreanTranscription\Compile;
+use Ob_Ivan\KoreanTranscription\ErrorHandler;
+use Ob_Ivan\KoreanTranscription\KoreanPage;
 
-// инициализация движка
+$timeStart = microtime(true);
+$projectRoot = dirname(__DIR__);
+require_once $projectRoot . '/vendor/autoload.php';
 
-$timeStart = microtime(1);
+set_error_handler([new ErrorHandler(), 'handleError']);
+$templateDir = $projectRoot . '/templates';
+$logDir      = $projectRoot . '/var/log';
 
-$currentDir  = dirname(__FILE__);
-$libDir      = $currentDir . '/lib';
-$templateDir = $currentDir . '/template';
-$logDir      = $currentDir . '/log';
-
-require_once $libDir . '/Autoload.php';
-require_once $libDir . '/Error.php';
-
-Autoload::registerClass('Compile',    $libDir . '/Compile.php');
-Autoload::registerClass('Convert',    $libDir . '/Convert.php');
-Autoload::registerClass('KoreanPage', $libDir . '/KoreanPage.php');
-Autoload::registerClass('LogFile',    $libDir . '/LogFile.php');
-
-mb_internal_encoding ('UTF-8');
-
-$debugMode = false !== strpos($currentDir, 'localhost');
+$debugMode = isset($_GET['debug']) && $_GET['debug'] == 'on';
 $showXml = isset($_GET['show']) && $_GET['show'] == 'xml';
 
-// полезная работа
-
-try
-{
+try {
     $compile = new Compile($templateDir);
     $page = new KoreanPage($compile);
-    if ($showXml)
-    {
+    if ($showXml) {
         header ('Content-Type: text/xml; charset=utf-8');
         print $page->showXml();
         die;
@@ -38,20 +26,13 @@ try
     $output = $page->getOutput();
     unset($page, $compile);
     print $output . '<!-- page generation time = ' . round((microtime(1) - $timeStart) * 1000, 2) . ' ms -->';
-}
-catch (Exception $e)
-{
-    // обработка ошибок
-    
-    if ($debugMode)
-    {
+} catch (Exception $e) {
+    if ($debugMode) {
         print_r($e);
-    }
-    else
-    {
+    } else {
         $log = new LogFile($logDir . '/korean.log');
-        $log->write (print_r($e, 1));
-        print 'Прости, у меня ничего не получается. Попроси ob-ivan\'а разобраться.';
+        $log->write(print_r($e, true));
+        print "Sorry, I can't get it working. Ask ob-ivan to handle this.";
     }
 }
 die;

@@ -1,4 +1,5 @@
 <?php
+namespace Ob_Ivan\KoreanTranscription;
 
 class Convert
 {
@@ -7,28 +8,28 @@ class Convert
 
     const STRING_KEY_CODE = 0;
     const STRING_KEY_JAMO = 1;
-    
+
     const SYLLABLE_KEY_LAT = 0;
     const SYLLABLE_KEY_RUS = 1;
-    
+
     const KOREAN_ENCODING = 'UCS-2BE';
     const OUTPUT_ENCODING = 'UTF-8';
-    
+
     static protected $jamo = array (
         1 => array ('g', 'gg', 'n', 'd', 'dd', 'r', 'm', 'b', 'bb', 's', 'ss', '', 'j', 'jj', 'ch', 'kh', 'th', 'ph', 'h'),
         2 => array (
-            'a', 'ae', 'ya', 'yae', 'eo', 'e', 'yeo', 'ye', 'o', 'wa', 'wae', 'oi', 'yo', 'u', 'wo', 'we', 'wi', 
+            'a', 'ae', 'ya', 'yae', 'eo', 'e', 'yeo', 'ye', 'o', 'wa', 'wae', 'oi', 'yo', 'u', 'wo', 'we', 'wi',
             'yu', 'eu', 'ui', 'i'
         ),
         3 => array (
-            '', 'g', 'gg', 'gs', 'n', 'nj', 'nh', 'd', 'r', 'rg', 'rm', 'rb', 'rs', 'rth', 'rph', 'rh', 'm', 'b', 
+            '', 'g', 'gg', 'gs', 'n', 'nj', 'nh', 'd', 'r', 'rg', 'rm', 'rb', 'rs', 'rth', 'rph', 'rh', 'm', 'b',
             'bs', 's', 'ss', 'ng', 'j', 'ch', 'kh', 'th', 'ph', 'h'
         ),
     );
-    
+
     protected $rus = '';
     protected $lat = '';
-    
+
     /**
      * @param string  $text utf-8 encoded korean string
      * @param integer $mode MODE_NAME for name conversion, MODE_TEXT for text conversion
@@ -42,7 +43,7 @@ class Convert
             case self::MODE_TEXT: $this->text($text); break;
         }
     }
-    
+
     public function __get($name)
     {
         if ($name == 'rus' || $name == 'lat')
@@ -51,19 +52,19 @@ class Convert
         }
         throw new Exception ('Property get access is denied: ' . __CLASS__ . '::' . $name);
     }
-    
+
     protected function text($text)
     {
         $string = self::makeStringArray($text);
         $rus = $lat = '';
-        
+
         for (
-            $l = count($string), $o = null, $c = $string[$i = 0]; 
-            $i < $l; 
+            $l = count($string), $o = null, $c = $string[$i = 0];
+            $i < $l;
             $o = $c, $i++
         ) {
             $c = $string[$i];
-        
+
             // передать некорейские символы как есть.
             if (! isset ($c[self::STRING_KEY_JAMO])) {
                 $new = iconv ('UCS-2BE', 'UTF-8', chr ($c[self::STRING_KEY_CODE] >> 8) . chr ($c[self::STRING_KEY_CODE] & 0xff));
@@ -71,21 +72,21 @@ class Convert
                 $lat .= $new;
                 continue;
             }
-            
+
             // o is for old (prev).
             // n is for next.
             $n = isset ($string[$i + 1]) ? $string[$i + 1] : null;
-            
+
             $s = self::syllable($c, $o, $n);
-            
+
             $lat .= $s[self::SYLLABLE_KEY_LAT];
             $rus .= $s[self::SYLLABLE_KEY_RUS];
         }
-        
+
         $this->rus = $rus;
         $this->lat = $lat;
     }
-    
+
     protected function name($text)
     {
         $this->rus = $this->lat = '';
@@ -93,9 +94,9 @@ class Convert
         {
             return;
         }
-        
+
         $string = self::makeStringArray($text);
-        
+
         // позиция деления на фамилию и имя.
         $space = self::findStringSpace($string);
         while (0 === $space)
@@ -118,7 +119,7 @@ class Convert
             array_splice($string, $space + 2);
         }
         $length = count($string);
-        
+
         for ($pos = 0; $pos < $space; ++$pos)
         {
             $prev = isset ($string[$pos - 1]) ? $string[$pos - 1] : null;
@@ -136,7 +137,7 @@ class Convert
         {
             $this->rus = 'ЛИМ';
         }
-        
+
         for ($pos = $space; $pos < $length; ++$pos)
         {
             // gns is for Given Name Syllable
@@ -152,7 +153,7 @@ class Convert
             $this->rus .= $rus;
         }
     }
-    
+
     static protected function findStringSpace ($string)
     {
         foreach ($string as $pos => $char)
@@ -164,7 +165,7 @@ class Convert
         }
         return false;
     }
-    
+
     static protected function syllable ($cur, $prev = null, $next = null)
     {
         if (! isset ($cur[self::STRING_KEY_JAMO])) {
@@ -174,22 +175,22 @@ class Convert
                 self::SYLLABLE_KEY_RUS => $new,
             );
         }
-        
+
         // c is for Current character.
         $c = $cur;
-        
+
         // o is for Old (previous) character.
         $o = $prev ? $prev : array();
-        
+
         // n is for Next character.
         $n = $next ? $next : array();
-        
+
         // c is for Cyrillic.
         $c1 = $c2 = $c3 = '';
-        
+
         // l is for Latin.
         $l1 = $l2 = $l3 = '';
-        
+
         // сгенерить начальную согласную.
         switch ($l1 = $c[self::STRING_KEY_JAMO][0]){
             case 'g':
@@ -199,8 +200,8 @@ class Convert
                     if (in_array ($o[self::STRING_KEY_JAMO][2], array ('nh', 'h'))) $c1 = 'кх';
                 }
             break;
-            case 'gg': 
-                $c1 = 'кк'; 
+            case 'gg':
+                $c1 = 'кк';
                 $l1 = 'kk';
             break;
             case 'n': $c1 = 'н'; break;
@@ -212,8 +213,8 @@ class Convert
                     if (in_array ($o[self::STRING_KEY_JAMO][2], array ('nh', 'h'))) $c1 = 'тх';
                 }
             break;
-            case 'dd': 
-                $c1 = 'тт'; 
+            case 'dd':
+                $c1 = 'тт';
                 $l1 = 'tt';
             break;
             case 'r':
@@ -231,8 +232,8 @@ class Convert
                     if (in_array ($o[self::STRING_KEY_JAMO][2], array ('nh', 'h'))) $c1 = 'пх';
                 }
             break;
-            case 'bb': 
-                $c1 = 'пп'; 
+            case 'bb':
+                $c1 = 'пп';
                 $l1 = 'pp';
             break;
             case 's': $c1 = 'с'; break;
@@ -244,33 +245,33 @@ class Convert
                     if (in_array ($o[self::STRING_KEY_JAMO][2], array ('nh', 'h'))) $c1 = 'чх';
                 }
             break;
-            case 'jj': 
-                $c1 = 'чч'; 
+            case 'jj':
+                $c1 = 'чч';
             break;
             case 'ch': $c1 = 'чх'; break;
             case '':
                 if (isset ($o[self::STRING_KEY_JAMO])) {
-                    if ($o[self::STRING_KEY_JAMO][2] == '') 
+                    if ($o[self::STRING_KEY_JAMO][2] == '')
                     {
                         $l1 = '\'';
                     }
                 }
             break;
-            case 'kh': 
-                $c1 = 'кх'; 
+            case 'kh':
+                $c1 = 'кх';
                 $l1 = 'k';
             break;
-            case 'th': 
-                $c1 = 'тх'; 
+            case 'th':
+                $c1 = 'тх';
                 $l1 = 't';
             break;
-            case 'ph': 
-                $c1 = 'пх'; 
+            case 'ph':
+                $c1 = 'пх';
                 $l1 = 'p';
             break;
             case 'h': $c1 = 'х'; break;
         }
-        
+
         // сгенерить гласную.
         switch ($l2 = $c[self::STRING_KEY_JAMO][1]) {
             case 'a':   $c2 = 'а'; break;
@@ -280,15 +281,15 @@ class Convert
             case 'eo':  $c2 = 'о'; break;
             case 'e':   $c2 = 'е'; break;
             case 'yeo': $c2 = 'ё'; break;
-            case 'ye':  
-                $c2 = 'йе'; 
+            case 'ye':
+                $c2 = 'йе';
                 if ($c1 != ''|| (isset ($o[self::STRING_KEY_JAMO]) && $o[self::STRING_KEY_JAMO][2] != '')) $c2 = 'е';
             break;
             case 'o':   $c2 = 'о'; break;
             case 'wa':  $c2 = 'ва'; break;
             case 'wae': $c2 = 'вэ'; break;
-            case 'oi':  
-                $c2 = 'ве'; 
+            case 'oi':
+                $c2 = 'ве';
                 $l2 = 'oe';
             break;
             case 'yo':  $c2 = 'ё'; break;
@@ -301,7 +302,7 @@ class Convert
             case 'ui':  $c2 = 'ый'; if ($c1 != '' || isset ($o[self::STRING_KEY_JAMO])) $c2 = 'и'; break;
             case 'i':   $c2 = 'и'; break;
         }
-        
+
         // сгенерить конечную согласную.
         switch ($l3 = $c[self::STRING_KEY_JAMO][2]) {
             case 'g':
@@ -321,8 +322,8 @@ class Convert
                     }
                 }
             break;
-            case 'gg': 
-                $c3 = 'кк'; 
+            case 'gg':
+                $c3 = 'кк';
                 $l3 = 'k';
             break;
             case 'gs':
@@ -455,10 +456,10 @@ class Convert
                     if ($n[self::STRING_KEY_JAMO][0] == '') $c3 = 'пс';
                 }
             break;
-            case 'ng': 
-                $c3 = 'н'; 
+            case 'ng':
+                $c3 = 'н';
                 if (isset ($n[self::STRING_KEY_JAMO])) {
-                    if ($n[self::STRING_KEY_JAMO][0] == '') 
+                    if ($n[self::STRING_KEY_JAMO][0] == '')
                     {
                         $l3 = 'ng-';
                         $c3 = 'нъ';
@@ -524,39 +525,39 @@ class Convert
             case 'h':
                 $c3 = 'т';
                 if (isset ($n[self::STRING_KEY_JAMO])) {
-                    if ($n[self::STRING_KEY_JAMO][0] == '') 
+                    if ($n[self::STRING_KEY_JAMO][0] == '')
                         $c3 = 'х';
                     else
                         $c3 = '';
                 }
             break;
         }
-        
+
         return array (
             self::SYLLABLE_KEY_LAT => $l1 . $l2 . $l3,
             self::SYLLABLE_KEY_RUS => $c1 . $c2 . $c3,
         );
     }
-    
+
     /**
      * Анализирует текст и превращает его в массив:
      *  array (
      *      STRING_KEY_CODE => <code>,
      *      STRING_KEY_JAMO => array (
-     *          1 => 
-     *          2 => 
-     *          3 => 
+     *          1 =>
+     *          2 =>
+     *          3 =>
      *      )
      *  )
     **/
     static protected function makeStringArray($text)
     {
         $string = array();
-        for ($i = 0, $l = strlen ($text); $i < $l; $i += 2) 
+        for ($i = 0, $l = strlen ($text); $i < $l; $i += 2)
         {
             $n = (ord($text[$i]) << 8) + ord($text[$i + 1]);
             $new = array (self::STRING_KEY_CODE => $n);
-            if ($n >= 44032 && $n <= 55203) 
+            if ($n >= 44032 && $n <= 55203)
             {
                 $n -= 44032;
                 $j1 = intval (floor ($n / 588));
@@ -564,8 +565,8 @@ class Convert
                 $j2 = intval (floor ($n / 28));
                 $j3 = intval ($n - $j2 * 28);
                 $new[self::STRING_KEY_JAMO] = array (
-                    self::$jamo[1][$j1], 
-                    self::$jamo[2][$j2], 
+                    self::$jamo[1][$j1],
+                    self::$jamo[2][$j2],
                     self::$jamo[3][$j3],
                 );
             }
@@ -574,4 +575,3 @@ class Convert
         return $string;
     }
 }
-
