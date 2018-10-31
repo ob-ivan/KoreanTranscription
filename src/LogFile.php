@@ -1,15 +1,16 @@
 <?php
+namespace Ob_Ivan\KoreanTranscription;
 
 class LogFile
 {
     const DATE_FORMAT = 'Y-m-d H:i:s';
-    
+
     public function __construct ($filePath)
     {
         $this->filePath = $filePath;
         $this->write(self::makeSeparator('open'));
     }
-    
+
     public function write ($message)
     {
         if (! $this->directoryExists)
@@ -29,24 +30,24 @@ class LogFile
         fwrite($file, self::makeMessage($message));
         fclose($file);
     }
-    
+
     public function __destruct()
     {
         $this->write(self::makeSeparator('close'));
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // private sector
-    
+
     protected $filePath = '';
     protected $directoryExists = false;
     const SEPARATOR = '========================================';
-    
+
     protected function makeMessage($message)
     {
         return '[' . date(self::DATE_FORMAT) . '] ' . $message . "\n";
     }
-    
+
     protected function makeSeparator($message)
     {
         return "\n" . self::SEPARATOR . ' ' . date(self::DATE_FORMAT) . ' [' . $message . '] ' . self::SEPARATOR . "\n\n";

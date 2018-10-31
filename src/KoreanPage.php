@@ -1,4 +1,5 @@
 <?php
+namespace Ob_Ivan\KoreanTranscription;
 
 /*
 usage:
@@ -16,7 +17,7 @@ class KoreanPage
     const PAGE_TITLE      = 'Транскрипция корейского языка';
     const LAYOUT_COLUMNS  = 30;
     const LAYOUT_ROWS_MIN =  5;
-    
+
     /**
      * Принимает иницилизированный компилятор.
     **/
@@ -24,7 +25,7 @@ class KoreanPage
     {
         $this->compile = $compile;
     }
-    
+
     public function getOutput()
     {
         if (! ($this->status & self::STATUS_OUTPUT_READY))
@@ -33,7 +34,7 @@ class KoreanPage
         }
         return $this->output;
     }
-    
+
     public function showXml()
     {
         if (! ($this->status & self::STATUS_OUTPUT_READY))
@@ -42,30 +43,30 @@ class KoreanPage
         }
         return $this->compile->getInput();
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // частный сектор
-    
+
     private $compile;
     private $output;
     private $data;
-    
+
     const STATUS_OUTPUT_READY = 0x01;
     private $status = 0;
-    
+
     protected function generateOutput()
     {
         if ($this->status & self::STATUS_OUTPUT_READY)
         {
             return;
         }
-        
+
         $this->generateData();
         $this->compileOutput();
-        
+
         $this->status |= self::STATUS_OUTPUT_READY;
     }
-    
+
     protected function generateData()
     {
         $data = array (
@@ -77,13 +78,13 @@ class KoreanPage
             ),
             'active_tab' => 'name',
         );
-        
+
         $action = false;
         if (isset ($_POST['action']))
         {
             $action = $_POST['action'];
         }
-        
+
         switch ($action)
         {
             case 'name': {
@@ -95,10 +96,10 @@ class KoreanPage
                 break;
             }
         }
-        
+
         $this->data = $data;
     }
-    
+
     static protected function convertName()
     {
         return array (
@@ -106,11 +107,11 @@ class KoreanPage
             'name' => self::convertGeneric(5, Convert::MODE_NAME)
         );
     }
-    
+
     static protected function convertText()
     {
         $text = self::convertGeneric(1024, Convert::MODE_TEXT);
-        
+
         $rows = intval (2 * strlen ($text['cyrillic']) / 3 / self::LAYOUT_COLUMNS);
         if ($rows < self::LAYOUT_ROWS_MIN)
         {
@@ -126,11 +127,11 @@ class KoreanPage
             'text' => $text,
         );
     }
-    
+
     static protected function convertGeneric($length, $mode)
     {
         $kor = mb_substr ($_POST['korean'], 0, $length);
-        
+
         $convert = new Convert($kor, $mode);
         $rus = $convert->rus;
         $lat = $convert->lat;
@@ -142,14 +143,14 @@ class KoreanPage
             'latin'     => $lat,
         );
     }
-    
+
     protected function compileOutput()
     {
         $this->compile->setTemplate (self::TEMPLATE_NAME);
         $this->compile->setData ($this->data);
         $this->output = $this->compile->getOutput();
     }
-    
+
     static protected function array_merge_recursive($a, $b)
     {
         foreach ($b as $k => $v)

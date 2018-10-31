@@ -1,6 +1,11 @@
 <?php
+namespace Ob_Ivan\KoreanTranscription;
 
-/**
+use DOMDocument;
+use Exception;
+use XSLTProcessor;
+
+/*
 
 Формирует аутпут из входного массива и файла XSL-шаблона.
 
@@ -21,18 +26,16 @@ $output = $compile->getOutput();
 $compile = new Compile($templatePath, $templateName, $data);
 $output = $compile->getOutput();
 
-----
-
-**/
-class Compile {
-
+*/
+class Compile
+{
     private $templatePath = '';
     private $templateName = '';
-    
+
     private $templateSet = false;
     private $dataSet = false;
     private $compilationDone = false;
-    
+
     private $dataXML = null;
     private $outputXML = null;
 
@@ -46,9 +49,9 @@ class Compile {
         if (! is_readable ($templatePath)) {
             throw new Exception ('Директория не может быть прочтена: ' . $templatePath);
         }
-        
+
         $this->templatePath = $templatePath;
-        
+
         if ($templateName) {
             $this->setTemplate ($templateName);
         }
@@ -56,7 +59,7 @@ class Compile {
             $this->setData ($data);
         }
     }
-    
+
     public function setTemplate ($templateName) {
         if ($this->templateSet) {
             throw new Exception ('Шаблон уже назначен, переназначение невозможно.');
@@ -71,7 +74,7 @@ class Compile {
         $this->templateName = $filename;
         $this->templateSet = true;
     }
-    
+
     private function arrayToXML ($data, $tagName = false) {
         if (! strlen($tagName)) {
             throw new Exception ('Имя тэга не может быть пустым.');
@@ -93,7 +96,7 @@ class Compile {
         $xml .= '</' . $tagName . '>';
         return $xml;
     }
-    
+
     public function setData ($data) {
         if ($this->dataSet) {
             throw new Exception ('Данные уже назначены, переназначение невозможно.');
@@ -104,7 +107,7 @@ class Compile {
         $this->dataXML = $this->arrayToXML ($data, 'data');
         $this->dataSet = true;
     }
-    
+
     private function compile () {
         if ($this->compilationDone) {
             throw new Exception ('Повторная компиляция невозможна.');
@@ -115,28 +118,28 @@ class Compile {
         if (! $this->dataSet) {
             throw new Exception ('Компиляция невозможна без данных.');
         }
-        
+
         $xml = new DOMDocument();
         $xml->loadXML ($this->dataXML);
-        
+
         $xsl = new DOMDocument();
         $xsl->substituteEntities = true;
         $xsl->load ($this->templateName);
-        
+
         $xslt = new XSLTProcessor();
         $xslt->importStylesheet ($xsl);
-        
+
         $this->outputXML = $xslt->transformToXML ($xml);
         $this->compilationDone = true;
     }
-    
+
     public function getOutput () {
         if (! $this->compilationDone) {
             $this->compile ();
         }
         return $this->outputXML;
     }
-    
+
     public function getInput () {
         if (! $this->dataSet) {
             throw new Exception ('Невозможно отдать XML, пока не загружены данные.');
@@ -145,5 +148,3 @@ class Compile {
     }
 
 }
-
-?>

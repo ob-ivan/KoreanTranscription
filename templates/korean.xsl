@@ -4,7 +4,7 @@
     <!ENTITY mdash  "&#8212;">
     <!ENTITY laquo  "&#171;">
     <!ENTITY raquo  "&#187;">
-    
+
     <!ENTITY wiki       "http://ru.wikipedia.org/wiki/">
     <!ENTITY koncevich  "Система_Концевича">
     <!ENTITY hangeul    "Хангыль">
@@ -17,23 +17,23 @@
         doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
         omit-xml-declaration="yes"
     />
-    
+
     <xsl:template match="/">
         <xsl:apply-templates/>
     </xsl:template>
-    
+
     <xsl:template match="data">
         <html>
             <head>
                 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
                 <title><xsl:value-of select="title"/></title>
-                <link rel="stylesheet" href="style/style.css"/>
-                <script type="text/javascript" src="script/jquery-1.7.2.min.js"></script>
-                <script type="text/javascript" src="script/jquery.addPlugin.js"></script>
-                <script type="text/javascript" src="script/jquery.color.js"></script>
-                <script type="text/javascript" src="script/jquery.selection.js"></script>
-                <script type="text/javascript" src="script/jquery.hangulEntry.js"></script>
-                <script type="text/javascript" src="script/Korean.js"></script>
+                <link rel="stylesheet" href="/css/style.css"/>
+                <script type="text/javascript" src="/js/jquery-1.7.2.min.js"></script>
+                <script type="text/javascript" src="/js/jquery.addPlugin.js"></script>
+                <script type="text/javascript" src="/js/jquery.color.js"></script>
+                <script type="text/javascript" src="/js/jquery.selection.js"></script>
+                <script type="text/javascript" src="/js/jquery.hangulEntry.js"></script>
+                <script type="text/javascript" src="/js/Korean.js"></script>
             </head>
             <body>
                 <h1>
@@ -44,7 +44,7 @@
                         </a>
                     </span>
                 </h1>
-                
+
                 <div class="tabs">
                     <div class="filler">Режим транскрипции:</div>
                     <div class="tab name">Имя</div>
@@ -52,7 +52,7 @@
                     <div class="tab text">Текст</div>
                     <div class="filler"/>
                 </div>
-                
+
                 <h2  class="name">Транскрипция имени</h2>
                 <div class="name container">
                     <form method="post">
@@ -119,7 +119,7 @@
                         </table>
                     </form>
                 </div>
-                
+
                 <h2  class="text">Транскрипция текста</h2>
                 <div class="text container">
                     <form method="post">
@@ -184,7 +184,7 @@
                         </table>
                     </form>
                 </div>
-                
+
                 <script type="text/javascript">var korean = new Korean('<xsl:value-of select="active_tab"/>')</script>
             </body>
         </html>
